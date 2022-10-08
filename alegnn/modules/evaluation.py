@@ -12,8 +12,9 @@ evaluate_flocking: evaluate a model using the flocking cost
 """
 
 import os
-import torch
 import pickle
+
+import torch
 
 
 def evaluate(model, data, **kwargs):

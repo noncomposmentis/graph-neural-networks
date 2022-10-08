@@ -2,11 +2,13 @@
 # This function is taken almost verbatim from https://github.com/amaiasalvador
 # and all credit should go to Amaia Salvador.
 
-import os
 import glob
-import torchvision.utils as vutils
+import os
 from operator import itemgetter
+
+import torchvision.utils as vutils
 from tensorboardX import SummaryWriter
+
 
 class Visualizer():
     def __init__(self, checkpoints_dir, name):
@@ -17,7 +19,7 @@ class Visualizer():
         self.ncols = 4
 
         # remove existing
-        for filename in glob.glob(self.checkpoints_dir+"/events*"):
+        for filename in glob.glob(self.checkpoints_dir + "/events*"):
             os.remove(filename)
         self.writer = SummaryWriter(checkpoints_dir)
 
@@ -44,9 +46,11 @@ class Visualizer():
             words_list = itemgetter(*idx)(vocabulary)
 
             if len(words_list) <= max_length:
-                self.writer.add_text('{}/{}_{}_{}'.format(mode, type, i, 'gt' if gt else 'prediction'), ', '.join(filter(lambda x: x != '<pad>', words_list)), epoch)
+                self.writer.add_text('{}/{}_{}_{}'.format(mode, type, i, 'gt' if gt else 'prediction'),
+                                     ', '.join(filter(lambda x: x != '<pad>', words_list)), epoch)
             else:
-                self.writer.add_text('{}/{}_{}_{}'.format(mode, type, i, 'gt' if gt else 'prediction'), 'Number of sampled ingredients is too big: {}'.format(len(words_list)), epoch)
+                self.writer.add_text('{}/{}_{}_{}'.format(mode, type, i, 'gt' if gt else 'prediction'),
+                                     'Number of sampled ingredients is too big: {}'.format(len(words_list)), epoch)
 
     # losses: dictionary of error labels and values
     def scalar_summary(self, mode, epoch, **args):
