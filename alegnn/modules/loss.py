@@ -13,16 +13,16 @@ import torch.nn as nn
 
 # An arbitrary loss function handling penalties needs to have the following
 # conditions
-# .penaltyList attribute listing the names of the penalties
-# .nPenalties attibute is an int with the number of penalties
+# .penalty_list attribute listing the names of the penalties
+# .n_penalties attribute is an int with the number of penalties
 # Forward function has to output the actual loss, the main loss (with no
 # penalties), and a dictionary with the value of each of the penalties.
 # This will be standard procedure for all loss functions that have penalties.
 # Note: The existence of a penalty will be signaled by an attribute in the model
 
-class adaptExtraDimensionLoss(nn.modules.loss._Loss):
+class AdaptExtraDimensionLoss(nn.modules.loss._Loss):
     """
-    adaptExtraDimensionLoss: wrapper that handles extra dimensions
+    AdaptExtraDimensionLoss: wrapper that handles extra dimensions
     
     Some loss functions take vectors as inputs while others take scalars; if we
     input a one-dimensional vector instead of a scalar, although virtually the
@@ -59,16 +59,16 @@ class adaptExtraDimensionLoss(nn.modules.loss._Loss):
     # This allows to change loss from crossEntropy (class based, expecting 
     # B x C input) to MSE or SmoothL1Loss (expecting B input)
     
-    def __init__(self, lossFunction, *args):
+    def __init__(self, loss_function, *args):
         # The second argument is optional and it is if there are any extra 
         # arguments with which we want to initialize the loss
         
         super().__init__()
         
         if len(args) > 0:
-            self.loss = lossFunction(*args) # Initialize loss function
+            self.loss = loss_function(*args) # Initialize loss function
         else:
-            self.loss = lossFunction()
+            self.loss = loss_function()
         
     def forward(self, estimate, target):
         
@@ -90,21 +90,21 @@ class adaptExtraDimensionLoss(nn.modules.loss._Loss):
         
         return self.loss(estimate, target)
     
-def F1Score(yHat, y):
+def F1Score(y_hat, y):
 # Luana R. Ruiz, rubruiz@seas.upenn.edu, 2021/03/04
-    dimensions = len(yHat.shape)
-    C = yHat.shape[dimensions-2]
-    N = yHat.shape[dimensions-1]
-    yHat = yHat.reshape((-1,C,N))
-    yHat = torch.nn.functional.log_softmax(yHat, dim=1)
-    yHat = torch.exp(yHat)
-    yHat = yHat[:,1,:]
+    dimensions = len(y_hat.shape)
+    C = y_hat.shape[dimensions-2]
+    N = y_hat.shape[dimensions-1]
+    y_hat = y_hat.reshape((-1,C,N))
+    y_hat = torch.nn.functional.log_softmax(y_hat, dim=1)
+    y_hat = torch.exp(y_hat)
+    y_hat = y_hat[:,1,:]
     y = y.reshape((-1,N))
     
-    tp = torch.sum(y*yHat,1)
-    #tn = torch.sum((1-y)*(1-yHat),1)
-    fp = torch.sum((1-y)*yHat,1)
-    fn = torch.sum(y*(1-yHat),1)
+    tp = torch.sum(y*y_hat,1)
+    #tn = torch.sum((1-y)*(1-y_hat),1)
+    fp = torch.sum((1-y)*y_hat,1)
+    fn = torch.sum(y*(1-y_hat),1)
 
     p = tp / (tp + fp)
     r = tp / (tp + fn)

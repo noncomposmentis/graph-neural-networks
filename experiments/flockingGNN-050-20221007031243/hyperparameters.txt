@@ -1,0 +1,96 @@
+2022/10/07 03:12:43
+
+nAgents = 50
+nAgentsMax = 50
+nSimPoints = 1
+commRadius = 2.0
+repelDist = 1.0
+nTrain = 400
+nValid = 20
+nTest = 20
+duration = 2.0
+samplingTime = 0.01
+initGeometry = circular
+initVelValue = 3.0
+initMinDist = 0.1
+accelMax = 10.0
+nRealizations = 10
+useGPU = True
+
+optimizationAlgorithm = ADAM
+learningRate = 0.0005
+beta1 = 0.9
+beta2 = 0.999
+lossFunction = <class 'torch.nn.modules.loss.MSELoss'>
+trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+evaluator = <function evaluateFlocking at 0x000001601EBADDC0>
+probExpert = 0.993
+nEpochs = 30
+batchSize = 20
+doLearningRateDecay = False
+learningRateDecayRate = 0.9
+learningRateDecayPeriod = 1
+validationInterval = 5
+
+name = LocalFlt
+archit = <class 'alegnn.modules.architecturesTime.LocalGNN_DB'>
+device = cuda:0
+dimNodeSignals = [6, 32]
+nFilterTaps = [4]
+bias = True
+nonlinearity = <class 'alegnn.utils.graphML.NoActivation'>
+dimReadout = [2]
+dimEdgeFeatures = 1
+
+name = LocalGNN
+archit = <class 'alegnn.modules.architecturesTime.LocalGNN_DB'>
+device = cuda:0
+dimNodeSignals = [6, 64]
+nFilterTaps = [3]
+bias = True
+nonlinearity = <class 'torch.nn.modules.activation.Tanh'>
+dimReadout = [2]
+dimEdgeFeatures = 1
+
+name = DAGNN1Ly
+archit = <class 'alegnn.modules.architecturesTime.AggregationGNN_DB'>
+device = cuda:0
+dimFeatures = [6]
+nFilterTaps = []
+bias = True
+nonlinearity = <class 'torch.nn.modules.activation.Tanh'>
+poolingFunction = <class 'alegnn.utils.graphML.NoPool'>
+poolingSize = []
+dimReadout = [64, 2]
+dimEdgeFeatures = 1
+nExchanges = 1
+
+name = GraphRNN
+archit = <class 'alegnn.modules.architecturesTime.GraphRecurrentNN_DB'>
+device = cuda:0
+dimInputSignals = 6
+dimOutputSignals = 64
+dimHiddenSignals = 64
+nFilterTaps = [3, 3]
+bias = True
+nonlinearityHidden = <built-in method tanh of type object at 0x00007FFF7477DF30>
+nonlinearityOutput = <built-in method tanh of type object at 0x00007FFF7477DF30>
+nonlinearityReadout = <class 'torch.nn.modules.activation.Tanh'>
+dimReadout = [2]
+dimEdgeFeatures = 1
+
+doPrint = True
+doLogging = False
+doSaveVars = True
+doFigs = True
+saveDir = experiments\flockingGNN-050-20221007031243
+printInterval = 1
+figSize = 5
+lineWidth = 2
+markerShape = o
+markerSize = 3
+videoSpeed = 0.5
+nVideos = 3
+
+nAgentsTest = [50]
+

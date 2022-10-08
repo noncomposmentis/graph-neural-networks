@@ -7,13 +7,14 @@ evaluation.py Evaluation Module
 Methods for evaluating the models.
 
 evaluate: evaluate a model
-evaluateSingleNode: evaluate a model that has a single node forward
-evaluateFlocking: evaluate a model using the flocking cost
+evaluate_single_node: evaluate a model that has a single node forward
+evaluate_flocking: evaluate a model using the flocking cost
 """
 
 import os
 import torch
 import pickle
+
 
 def evaluate(model, data, **kwargs):
     """
@@ -22,307 +23,309 @@ def evaluate(model, data, **kwargs):
     Input:
         model (model class): class from Modules.model
         data (data class): a data class from the Utils.dataTools; it needs to
-            have a getSamples method and an evaluate method.
-        doPrint (optional, bool): if True prints results
+            have a get_samples method and an evaluate method.
+        do_print (optional, bool): if True prints results
     
     Output:
-        evalVars (dict): 'errorBest' contains the error rate for the best
+        eval_vars (dict): 'errorBest' contains the error rate for the best
             model, and 'errorLast' contains the error rate for the last model
     """
 
     # Get the device we're working on
     device = model.device
-    
-    if 'doSaveVars' in kwargs.keys():
-        doSaveVars = kwargs['doSaveVars']
+
+    if 'do_save_vars' in kwargs.keys():
+        do_save_vars = kwargs['do_save_vars']
     else:
-        doSaveVars = True
+        do_save_vars = True
 
     ########
     # DATA #
     ########
 
-    xTest, yTest = data.getSamples('test')
-    xTest = xTest.to(device)
-    yTest = yTest.to(device)
+    x_test, y_test = data.get_samples('test')
+    x_test = x_test.to(device)
+    y_test = y_test.to(device)
 
     ##############
     # BEST MODEL #
     ##############
 
-    model.load(label = 'Best')
+    model.load(label='Best')
 
     with torch.no_grad():
         # Process the samples
-        yHatTest = model.archit(xTest)
-        # yHatTest is of shape
+        y_hat_test = model.archit(x_test)
+        # y_hat_test is of shape
         #   testSize x numberOfClasses
         # We compute the error
-        costBest = data.evaluate(yHatTest, yTest)
+        cost_best = data.evaluate(y_hat_test, y_test)
 
     ##############
     # LAST MODEL #
     ##############
 
-    model.load(label = 'Last')
+    model.load(label='Last')
 
     with torch.no_grad():
         # Process the samples
-        yHatTest = model.archit(xTest)
-        # yHatTest is of shape
+        y_hat_test = model.archit(x_test)
+        # y_hat_test is of shape
         #   testSize x numberOfClasses
         # We compute the error
-        costLast = data.evaluate(yHatTest, yTest)
+        cost_last = data.evaluate(y_hat_test, y_test)
 
-    evalVars = {}
-    evalVars['costBest'] = costBest.item()
-    evalVars['costLast'] = costLast.item()
-    
-    if doSaveVars:
-        saveDirVars = os.path.join(model.saveDir, 'evalVars')
-        if not os.path.exists(saveDirVars):
-            os.makedirs(saveDirVars)
-        pathToFile = os.path.join(saveDirVars, model.name + 'evalVars.pkl')
-        with open(pathToFile, 'wb') as evalVarsFile:
-            pickle.dump(evalVars, evalVarsFile)
+    eval_vars = {}
+    eval_vars['cost_best'] = cost_best.item()
+    eval_vars['cost_last'] = cost_last.item()
 
-    return evalVars
+    if do_save_vars:
+        save_dir_vars = os.path.join(model.save_dir, 'eval_vars')
+        if not os.path.exists(save_dir_vars):
+            os.makedirs(save_dir_vars)
+        path_to_file = os.path.join(save_dir_vars, model.name + 'eval_vars.pkl')
+        with open(path_to_file, 'wb') as eval_varsFile:
+            pickle.dump(eval_vars, eval_varsFile)
 
-def evaluateSingleNode(model, data, **kwargs):
+    return eval_vars
+
+
+def evaluate_single_node(model, data, **kwargs):
     """
-    evaluateSingleNode: evaluate a model that has a single node forward
-    
+    evaluate_single_node: evaluate a model that has a single node forward
+
     Input:
-        model (model class): class from Modules.model, needs to have a 
-            'singleNodeForward' method
+        model (model class): class from Modules.model, needs to have a
+            'single_node_forward' method
         data (data class): a data class from the Utils.dataTools; it needs to
-            have a getSamples method and an evaluate method and it also needs to
-            have a 'getLabelID' method
-        doPrint (optional, bool): if True prints results
-    
+            have a get_samples method and an evaluate method and it also needs to
+            have a 'get_label_id' method
+        do_print (optional, bool): if True prints results
+
     Output:
-        evalVars (dict): 'errorBest' contains the error rate for the best
+        eval_vars (dict): 'errorBest' contains the error rate for the best
             model, and 'errorLast' contains the error rate for the last model
     """
-    
-    assert 'singleNodeForward' in dir(model.archit)
-    assert 'getLabelID' in dir(data)
+
+    assert 'single_node_forward' in dir(model.archit)
+    assert 'get_label_id' in dir(data)
 
     # Get the device we're working on
     device = model.device
-    
-    if 'doSaveVars' in kwargs.keys():
-        doSaveVars = kwargs['doSaveVars']
+
+    if 'do_save_vars' in kwargs.keys():
+        do_save_vars = kwargs['do_save_vars']
     else:
-        doSaveVars = True
+        do_save_vars = True
 
     ########
     # DATA #
     ########
 
-    xTest, yTest = data.getSamples('test')
-    xTest = xTest.to(device)
-    yTest = yTest.to(device)
-    targetIDs = data.getLabelID('test')
+    x_test, y_test = data.get_samples('test')
+    x_test = x_test.to(device)
+    y_test = y_test.to(device)
+    target_ids = data.get_label_id('test')
 
     ##############
     # BEST MODEL #
     ##############
 
-    model.load(label = 'Best')
+    model.load(label='Best')
 
     with torch.no_grad():
         # Process the samples
-        yHatTest = model.archit.singleNodeForward(xTest, targetIDs)
-        # yHatTest is of shape
+        y_hat_test = model.archit.single_node_forward(x_test, target_ids)
+        # y_hat_test is of shape
         #   testSize x numberOfClasses
         # We compute the error
-        costBest = data.evaluate(yHatTest, yTest)
+        cost_best = data.evaluate(y_hat_test, y_test)
 
     ##############
     # LAST MODEL #
     ##############
 
-    model.load(label = 'Last')
+    model.load(label='Last')
 
     with torch.no_grad():
         # Process the samples
-        yHatTest = model.archit.singleNodeForward(xTest, targetIDs)
-        # yHatTest is of shape
+        y_hat_test = model.archit.single_node_forward(x_test, target_ids)
+        # y_hat_test is of shape
         #   testSize x numberOfClasses
         # We compute the error
-        costLast = data.evaluate(yHatTest, yTest)
+        cost_last = data.evaluate(y_hat_test, y_test)
 
-    evalVars = {}
-    evalVars['costBest'] = costBest.item()
-    evalVars['costLast'] = costLast.item()
-    
-    if doSaveVars:
-        saveDirVars = os.path.join(model.saveDir, 'evalVars')
-        if not os.path.exists(saveDirVars):
-            os.makedirs(saveDirVars)
-        pathToFile = os.path.join(saveDirVars, model.name + 'evalVars.pkl')
-        with open(pathToFile, 'wb') as evalVarsFile:
-            pickle.dump(evalVars, evalVarsFile)
+    eval_vars = {}
+    eval_vars['cost_best'] = cost_best.item()
+    eval_vars['cost_last'] = cost_last.item()
 
-    return evalVars
+    if do_save_vars:
+        save_dir_vars = os.path.join(model.save_dir, 'eval_vars')
+        if not os.path.exists(save_dir_vars):
+            os.makedirs(save_dir_vars)
+        path_to_file = os.path.join(save_dir_vars, model.name + 'eval_vars.pkl')
+        with open(path_to_file, 'wb') as eval_varsFile:
+            pickle.dump(eval_vars, eval_varsFile)
 
-def evaluateFlocking(model, data, **kwargs):
+    return eval_vars
+
+
+def evaluate_flocking(model, data, **kwargs):
     """
-    evaluateClassif: evaluate a model using the flocking cost of velocity 
+    evaluateClassif: evaluate a model using the flocking cost of velocity
         variacne of the team
-    
+
     Input:
         model (model class): class from Modules.model
         data (data class): the data class that generates the flocking data
-        doPrint (optional; bool, default: True): if True prints results
-        nVideos (optional; int, default: 3): number of videos to save
-        graphNo (optional): identify the run with a number
-        realizationNo (optional): identify the run with another number
-    
+        do_print (optional; bool, default: True): if True prints results
+        n_videos (optional; int, default: 3): number of videos to save
+        graph_no (optional): identify the run with a number
+        realization_no (optional): identify the run with another number
+
     Output:
-        evalVars (dict):
-            'costBestFull': cost of the best model over the full trajectory
-            'costBestEnd': cost of the best model at the end of the trajectory
-            'costLastFull': cost of the last model over the full trajectory
-            'costLastEnd': cost of the last model at the end of the trajectory
+        eval_vars (dict):
+            'cost_bestFull': cost of the best model over the full trajectory
+            'cost_bestEnd': cost of the best model at the end of the trajectory
+            'cost_lastFull': cost of the last model over the full trajectory
+            'cost_lastEnd': cost of the last model at the end of the trajectory
     """
-    
-    if 'doPrint' in kwargs.keys():
-        doPrint = kwargs['doPrint']
-    else:
-        doPrint = True
-        
-    if 'nVideos' in kwargs.keys():
-        nVideos = kwargs['nVideos']
-    else:
-        nVideos = 3
-        
-    if 'graphNo' in kwargs.keys():
-        graphNo = kwargs['graphNo']
-    else:
-        graphNo = -1
 
-    if 'realizationNo' in kwargs.keys():
-        if 'graphNo' in kwargs.keys():
-            realizationNo = kwargs['realizationNo']
+    if 'do_print' in kwargs.keys():
+        do_print = kwargs['do_print']
+    else:
+        do_print = True
+
+    if 'n_videos' in kwargs.keys():
+        n_videos = kwargs['n_videos']
+    else:
+        n_videos = 3
+
+    if 'graph_no' in kwargs.keys():
+        graph_no = kwargs['graph_no']
+    else:
+        graph_no = -1
+
+    if 'realization_no' in kwargs.keys():
+        if 'graph_no' in kwargs.keys():
+            realization_no = kwargs['realization_no']
         else:
-            graphNo = kwargs['realizationNo']
-            realizationNo = -1
+            graph_no = kwargs['realization_no']
+            realization_no = -1
     else:
-        realizationNo = -1
+        realization_no = -1
 
-    #\\\\\\\\\\\\\\\\\\\\
-    #\\\ TRAJECTORIES \\\
-    #\\\\\\\\\\\\\\\\\\\\
+    # \\\\\\\\\\\\\\\\\\\\
+    # \\\ TRAJECTORIES \\\
+    # \\\\\\\\\\\\\\\\\\\\
 
     ########
     # DATA #
     ########
 
     # Initial data
-    initPosTest = data.getData('initPos', 'test')
-    initVelTest = data.getData('initVel', 'test')
+    init_pos_test = data.get_data('init_pos', 'test')
+    init_vel_test = data.get_data('init_vel', 'test')
 
     ##############
     # BEST MODEL #
     ##############
 
-    model.load(label = 'Best')
+    model.load(label='Best')
 
-    if doPrint:
+    if do_print:
         print("\tComputing learned trajectory for best model...",
-              end = ' ', flush = True)
+              end=' ', flush=True)
 
-    posTestBest, \
-    velTestBest, \
-    accelTestBest, \
-    stateTestBest, \
-    commGraphTestBest = \
-        data.computeTrajectory(initPosTest, initVelTest, data.duration,
-                               archit = model.archit)
+    pos_test_best, \
+    vel_test_best, \
+    accel_test_best, \
+    state_test_best, \
+    comm_graph_test_best = \
+        data.compute_trajectory(init_pos_test, init_vel_test, data.duration,
+                                archit=model.archit)
 
-    if doPrint:
+    if do_print:
         print("OK")
 
     ##############
     # LAST MODEL #
     ##############
 
-    model.load(label = 'Last')
+    model.load(label='Last')
 
-    if doPrint:
+    if do_print:
         print("\tComputing learned trajectory for last model...",
-              end = ' ', flush = True)
+              end=' ', flush=True)
 
-    posTestLast, \
-    velTestLast, \
-    accelTestLast, \
-    stateTestLast, \
-    commGraphTestLast = \
-        data.computeTrajectory(initPosTest, initVelTest, data.duration,
-                               archit = model.archit)
+    pos_test_last, \
+    vel_test_last, \
+    accel_test_last, \
+    state_test_last, \
+    comm_graph_test_last = \
+        data.compute_trajectory(init_pos_test, init_vel_test, data.duration,
+                                archit=model.archit)
 
-    if doPrint:
+    if do_print:
         print("OK")
 
     ###########
     # PREVIEW #
     ###########
 
-    learnedTrajectoriesDir = os.path.join(model.saveDir,
-                                          'learnedTrajectories')
-    
-    if not os.path.exists(learnedTrajectoriesDir):
-        os.mkdir(learnedTrajectoriesDir)
-    
-    if graphNo > -1:
-        learnedTrajectoriesDir = os.path.join(learnedTrajectoriesDir,
-                                              '%03d' % graphNo)
-        if not os.path.exists(learnedTrajectoriesDir):
-            os.mkdir(learnedTrajectoriesDir)
-    if realizationNo > -1:
-        learnedTrajectoriesDir = os.path.join(learnedTrajectoriesDir,
-                                              '%03d' % realizationNo)
-        if not os.path.exists(learnedTrajectoriesDir):
-            os.mkdir(learnedTrajectoriesDir)
+    learned_trajectories_dir = os.path.join(model.save_dir,
+                                            'learnedTrajectories')
 
-    learnedTrajectoriesDir = os.path.join(learnedTrajectoriesDir, model.name)
+    if not os.path.exists(learned_trajectories_dir):
+        os.mkdir(learned_trajectories_dir)
 
-    if not os.path.exists(learnedTrajectoriesDir):
-        os.mkdir(learnedTrajectoriesDir)
+    if graph_no > -1:
+        learned_trajectories_dir = os.path.join(learned_trajectories_dir,
+                                                '%03d' % graph_no)
+        if not os.path.exists(learned_trajectories_dir):
+            os.mkdir(learned_trajectories_dir)
+    if realization_no > -1:
+        learned_trajectories_dir = os.path.join(learned_trajectories_dir,
+                                                '%03d' % realization_no)
+        if not os.path.exists(learned_trajectories_dir):
+            os.mkdir(learned_trajectories_dir)
 
-    if doPrint:
+    learned_trajectories_dir = os.path.join(learned_trajectories_dir, model.name)
+
+    if not os.path.exists(learned_trajectories_dir):
+        os.mkdir(learned_trajectories_dir)
+
+    if do_print:
         print("\tPreview data...",
-              end = ' ', flush = True)
+              end=' ', flush=True)
 
-    data.saveVideo(os.path.join(learnedTrajectoriesDir,'Best'),
-                   posTestBest,
-                   nVideos,
-                   commGraph = commGraphTestBest,
-                   vel = velTestBest,
-                   videoSpeed = 0.5,
-                   doPrint = False)
+    data.save_video(os.path.join(learned_trajectories_dir, 'Best'),
+                    pos_test_best,
+                    n_videos,
+                    commGraph=comm_graph_test_best,
+                    vel=vel_test_best,
+                    videoSpeed=0.5,
+                    do_print=False)
 
-    data.saveVideo(os.path.join(learnedTrajectoriesDir,'Last'),
-                   posTestLast,
-                   nVideos,
-                   commGraph = commGraphTestLast,
-                   vel = velTestLast,
-                   videoSpeed = 0.5,
-                   doPrint = False)
+    data.save_video(os.path.join(learned_trajectories_dir, 'Last'),
+                    pos_test_last,
+                    n_videos,
+                    commGraph=comm_graph_test_last,
+                    vel=vel_test_last,
+                    videoSpeed=0.5,
+                    do_print=False)
 
-    if doPrint:
-        print("OK", flush = True)
+    if do_print:
+        print("OK", flush=True)
 
-    #\\\\\\\\\\\\\\\\\\
-    #\\\ EVALUATION \\\
-    #\\\\\\\\\\\\\\\\\\
-        
-    evalVars = {}
-    evalVars['costBestFull'] = data.evaluate(vel = velTestBest)
-    evalVars['costBestEnd'] = data.evaluate(vel = velTestBest[:,-1:,:,:])
-    evalVars['costLastFull'] = data.evaluate(vel = velTestLast)
-    evalVars['costLastEnd'] = data.evaluate(vel = velTestLast[:,-1:,:,:])
+    # \\\\\\\\\\\\\\\\\\
+    # \\\ EVALUATION \\\
+    # \\\\\\\\\\\\\\\\\\
 
-    return evalVars
+    eval_vars = {}
+    eval_vars['cost_bestFull'] = data.evaluate(vel=vel_test_best)
+    eval_vars['cost_bestEnd'] = data.evaluate(vel=vel_test_best[:, -1:, :, :])
+    eval_vars['cost_lastFull'] = data.evaluate(vel=vel_test_last)
+    eval_vars['cost_lastEnd'] = data.evaluate(vel=vel_test_last[:, -1:, :, :])
+
+    return eval_vars
