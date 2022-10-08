@@ -7,8 +7,8 @@ dataTools.py Data management module
 
 Functions:
     
-normalizeData: normalize data along a specified axis
-changeDataType: change data type of data
+normalize_data: normalize data along a specified axis
+change_data_type: change data type of data
 
 Classes (datasets):
 
@@ -47,45 +47,45 @@ import torch
 
 import alegnn.utils.graph_tools as graph
 
-zeroTolerance = 1e-9 # Values below this number are considered zero.
+zero_tolerance = 1e-9 # Values below this number are considered zero.
 
-def normalizeData(x, ax):
+def normalize_data(x, ax):
     """
-    normalizeData(x, ax): normalize data x (subtract mean and divide by standard 
+    normalize_data(x, ax): normalize data x (subtract mean and divide by standard 
     deviation) along the specified axis ax
     """
     
-    thisShape = x.shape # get the shape
-    assert ax < len(thisShape) # check that the axis that we want to normalize
+    this_shape = x.shape # get the shape
+    assert ax < len(this_shape) # check that the axis that we want to normalize
         # is there
-    dataType = type(x) # get data type so that we don't have to convert
+    data_type = type(x) # get data type so that we don't have to convert
 
-    if 'numpy' in repr(dataType):
-
-        # Compute the statistics
-        xMean = np.mean(x, axis = ax)
-        xDev = np.std(x, axis = ax)
-        # Add back the dimension we just took out
-        xMean = np.expand_dims(xMean, ax)
-        xDev = np.expand_dims(xDev, ax)
-
-    elif 'torch' in repr(dataType):
+    if 'numpy' in repr(data_type):
 
         # Compute the statistics
-        xMean = torch.mean(x, dim = ax)
-        xDev = torch.std(x, dim = ax)
+        x_mean = np.mean(x, axis = ax)
+        x_dev = np.std(x, axis = ax)
         # Add back the dimension we just took out
-        xMean = xMean.unsqueeze(ax)
-        xDev = xDev.unsqueeze(ax)
+        x_mean = np.expand_dims(x_mean, ax)
+        x_dev = np.expand_dims(x_dev, ax)
+
+    elif 'torch' in repr(data_type):
+
+        # Compute the statistics
+        x_mean = torch.mean(x, dim = ax)
+        x_dev = torch.std(x, dim = ax)
+        # Add back the dimension we just took out
+        x_mean = x_mean.unsqueeze(ax)
+        x_dev = x_dev.unsqueeze(ax)
 
     # Subtract mean and divide by standard deviation
-    x = (x - xMean) / xDev
+    x = (x - x_mean) / x_dev
 
     return x
 
-def changeDataType(x, dataType):
+def change_data_type(x, data_type):
     """
-    changeDataType(x, dataType): change the dataType of variable x into dataType
+    change_data_type(x, data_type): change the data_type of variable x into data_type
     """
     
     # So this is the thing: To change data type it depends on both, what dtype
@@ -103,61 +103,61 @@ def changeDataType(x, dataType):
     # Check if the variable has an argument called 'dtype' so that we can now
     # what type of data type the variable is
     if 'dtype' in dir(x):
-        varType = x.dtype
+        var_type = x.dtype
     
     # So, let's start assuming we want to convert to numpy
-    if 'numpy' in repr(dataType):
+    if 'numpy' in repr(data_type):
         # Then, the variable con be torch, in which case we move it to cpu, to
         # numpy, and convert it to the right type.
-        if 'torch' in repr(varType):
-            x = x.cpu().numpy().astype(dataType)
+        if 'torch' in repr(var_type):
+            x = x.cpu().numpy().astype(data_type)
         # Or it could be numpy, in which case we just use .astype
         elif 'numpy' in repr(type(x)):
-            x = x.astype(dataType)
+            x = x.astype(data_type)
     # Now, we want to convert to torch
-    elif 'torch' in repr(dataType):
+    elif 'torch' in repr(data_type):
         # If the variable is torch in itself
-        if 'torch' in repr(varType):
-            x = x.type(dataType)
+        if 'torch' in repr(var_type):
+            x = x.type(data_type)
         # But, if it's numpy
         elif 'numpy' in repr(type(x)):
-            x = torch.tensor(x, dtype = dataType)
+            x = torch.tensor(x, dtype = data_type)
             
     # This only converts between numpy and torch. Any other thing is ignored
     return x
 
-def invertTensorEW(x):
+def invert_tensor_ew(x):
     
     # Elementwise inversion of a tensor where the 0 elements are kept as zero.
     # Warning: Creates a copy of the tensor
-    xInv = x.copy() # Copy the matrix to invert
+    x_inv = x.copy() # Copy the matrix to invert
     # Replace zeros for ones.
-    xInv[x < zeroTolerance] = 1. # Replace zeros for ones
-    xInv = 1./xInv # Now we can invert safely
-    xInv[x < zeroTolerance] = 0. # Put back the zeros
+    x_inv[x < zero_tolerance] = 1. # Replace zeros for ones
+    x_inv = 1./x_inv # Now we can invert safely
+    x_inv[x < zero_tolerance] = 0. # Put back the zeros
     
-    return xInv
+    return x_inv
 
 class _data:
     # Internal supraclass from which all data sets will inherit.
     # There are certain methods that all Data classes must have:
-    #   getSamples(), expandDims(), to() and astype().
+    #   get_samples(), expand_dims(), to() and astype().
     # To avoid coding this methods over and over again, we create a class from
     # which the data can inherit this basic methods.
     
     # All the signals are always assumed to be graph signals that are written
     #   nDataPoints (x nFeatures) x nNodes
-    # If we have one feature, we have the expandDims() that adds a x1 so that
+    # If we have one feature, we have the expand_dims() that adds a x1 so that
     # it can be readily processed by architectures/functions that always assume
     # a 3-dimensional signal.
     
     def __init__(self):
         # Minimal set of attributes that all data classes should have
-        self.dataType = None
+        self.data_type = None
         self.device = None
-        self.nTrain = None
-        self.nValid = None
-        self.nTest = None
+        self.n_train = None
+        self.n_valid = None
+        self.n_test = None
         self.samples = {}
         self.samples['train'] = {}
         self.samples['train']['signals'] = None
@@ -169,56 +169,56 @@ class _data:
         self.samples['test']['signals'] = None
         self.samples['test']['targets'] = None
         
-    def getSamples(self, samplesType, *args):
-        # samplesType: train, valid, test
+    def get_samples(self, samples_type, *args):
+        # samples_type: train, valid, test
         # args: 0 args, give back all
         # args: 1 arg: if int, give that number of samples, chosen at random
         # args: 1 arg: if list, give those samples precisely.
         # Check that the type is one of the possible ones
-        assert samplesType == 'train' or samplesType == 'valid' \
-                    or samplesType == 'test'
+        assert samples_type == 'train' or samples_type == 'valid' \
+                    or samples_type == 'test'
         # Check that the number of extra arguments fits
         assert len(args) <= 1
         # If there are no arguments, just return all the desired samples
-        x = self.samples[samplesType]['signals']
-        y = self.samples[samplesType]['targets']
+        x = self.samples[samples_type]['signals']
+        y = self.samples[samples_type]['targets']
         # If there's an argument, we have to check whether it is an int or a
         # list
         if len(args) == 1:
             # If it is an int, just return that number of randomly chosen
             # samples.
             if type(args[0]) == int:
-                nSamples = x.shape[0] # total number of samples
+                n_samples = x.shape[0] # total number of samples
                 # We can't return more samples than there are available
-                assert args[0] <= nSamples
+                assert args[0] <= n_samples
                 # Randomly choose args[0] indices
-                selectedIndices = np.random.choice(nSamples, size = args[0],
+                selected_indices = np.random.choice(n_samples, size = args[0],
                                                    replace = False)
                 # Select the corresponding samples
-                xSelected = x[selectedIndices]
-                y = y[selectedIndices]
+                x_selected = x[selected_indices]
+                y = y[selected_indices]
             else:
                 # The fact that we put else here instead of elif type()==list
                 # allows for np.array to be used as indices as well. In general,
                 # any variable with the ability to index.
-                xSelected = x[args[0]]
+                x_selected = x[args[0]]
                 # And assign the labels
                 y = y[args[0]]
                 
             # If we only selected a single element, then the nDataPoints dim
             # has been left out. So if we have less dimensions, we have to
             # put it back
-            if len(xSelected.shape) < len(x.shape):
-                if 'torch' in self.dataType:
-                    x = xSelected.unsqueeze(0)
+            if len(x_selected.shape) < len(x.shape):
+                if 'torch' in self.data_type:
+                    x = x_selected.unsqueeze(0)
                 else:
-                    x = np.expand_dims(xSelected, axis = 0)
+                    x = np.expand_dims(x_selected, axis = 0)
             else:
-                x = xSelected
+                x = x_selected
 
         return x, y
     
-    def expandDims(self):
+    def expand_dims(self):
         
         # For each data set partition
         for key in self.samples.keys():
@@ -232,7 +232,7 @@ class _data:
                     #   nDataPoints x 1 x nNodes
                     # and it respects the 3-dimensional format that is taken
                     # by many of the processing functions
-                    if 'torch' in repr(self.dataType):
+                    if 'torch' in repr(self.data_type):
                         self.samples[key]['signals'] = \
                                        self.samples[key]['signals'].unsqueeze(1)
                     else:
@@ -240,7 +240,7 @@ class _data:
                                                    self.samples[key]['signals'],
                                                    axis = 1)
                 elif len(self.samples[key]['signals'].shape) == 3:
-                    if 'torch' in repr(self.dataType):
+                    if 'torch' in repr(self.data_type):
                         self.samples[key]['signals'] = \
                                        self.samples[key]['signals'].unsqueeze(2)
                     else:
@@ -248,60 +248,60 @@ class _data:
                                                    self.samples[key]['signals'],
                                                    axis = 2)
         
-    def astype(self, dataType):
+    def astype(self, data_type):
         # This changes the type for the minimal attributes (samples). This 
         # methods should still be initialized within the data classes, if more
         # attributes are used.
         
         # The labels could be integers as created from the dataset, so if they
         # are, we need to be sure they are integers also after conversion. 
-        # To do this we need to match the desired dataType to its int 
+        # To do this we need to match the desired data_type to its int 
         # counterpart. Typical examples are:
         #   numpy.float64 -> numpy.int64
         #   numpy.float32 -> numpy.int32
         #   torch.float64 -> torch.int64
         #   torch.float32 -> torch.int32
         
-        targetType = str(self.samples['train']['targets'].dtype)
-        if 'int' in targetType:
-            if 'numpy' in repr(dataType):
-                if '64' in targetType:
-                    targetType = np.int64
-                elif '32' in targetType:
-                    targetType = np.int32
-            elif 'torch' in repr(dataType):
-                if '64' in targetType:
-                    targetType = torch.int64
-                elif '32' in targetType:
-                    targetType = torch.int32
-        else: # If there is no int, just stick with the given dataType
-            targetType = dataType
+        target_type = str(self.samples['train']['targets'].dtype)
+        if 'int' in target_type:
+            if 'numpy' in repr(data_type):
+                if '64' in target_type:
+                    target_type = np.int64
+                elif '32' in target_type:
+                    target_type = np.int32
+            elif 'torch' in repr(data_type):
+                if '64' in target_type:
+                    target_type = torch.int64
+                elif '32' in target_type:
+                    target_type = torch.int32
+        else: # If there is no int, just stick with the given data_type
+            target_type = data_type
         
-        # Now that we have selected the dataType, and the corresponding
+        # Now that we have selected the data_type, and the corresponding
         # labelType, we can proceed to convert the data into the corresponding
         # type
         for key in self.samples.keys():
-            self.samples[key]['signals'] = changeDataType(
+            self.samples[key]['signals'] = change_data_type(
                                                    self.samples[key]['signals'],
-                                                   dataType)
-            self.samples[key]['targets'] = changeDataType(
+                                                   data_type)
+            self.samples[key]['targets'] = change_data_type(
                                                    self.samples[key]['targets'],
-                                                   targetType)
+                                                   target_type)
 
         # Update attribute
-        if dataType is not self.dataType:
-            self.dataType = dataType
+        if data_type is not self.data_type:
+            self.data_type = data_type
 
     def to(self, device):
         # This changes the type for the minimal attributes (samples). This 
         # methods should still be initialized within the data classes, if more
         # attributes are used.
         # This can only be done if they are torch tensors
-        if 'torch' in repr(self.dataType):
+        if 'torch' in repr(self.data_type):
             for key in self.samples.keys():
-                for secondKey in self.samples[key].keys():
-                    self.samples[key][secondKey] \
-                                      = self.samples[key][secondKey].to(device)
+                for second_key in self.samples[key].keys():
+                    self.samples[key][second_key] \
+                                      = self.samples[key][second_key].to(device)
 
             # If the device changed, save it.
             if device is not self.device:
@@ -322,61 +322,61 @@ class Flocking(_data):
     Initialization:
         
     Input:
-        nAgents (int): Number of agents
-        commRadius (float): communication radius (in meters)
-        repelDist (float): minimum target separation of agents (in meters)
-        nTrain (int): number of training trajectories
-        nValid (int): number of validation trajectories
-        nTest (int): number of testing trajectories
+        n_agents (int): Number of agents
+        comm_radius (float): communication radius (in meters)
+        repel_dist (float): minimum target separation of agents (in meters)
+        n_train (int): number of training trajectories
+        n_valid (int): number of validation trajectories
+        n_test (int): number of testing trajectories
         duration (float): duration of each trajectory (in seconds)
-        samplingTime (float): time between consecutive time instants (in sec)
-        initGeometry ('circular', 'rectangular'): initial positioning geometry
+        sampling_time (float): time between consecutive time instants (in sec)
+        init_geometry ('circular', 'rectangular'): initial positioning geometry
             (default: 'circular')
-        initVelValue (float): maximum initial velocity (in meters/seconds,
+        init_vel_value (float): maximum initial velocity (in meters/seconds,
             default: 3.)
-        initMinDist (float): minimum initial distance between agents (in
+        init_min_dist (float): minimum initial distance between agents (in
             meters, default: 0.1)
-        accelMax (float): maximum possible acceleration (in meters/seconds^2,
+        accel_max (float): maximum possible acceleration (in meters/seconds^2,
             default: 10.)
-        normalizeGraph (bool): if True normalizes the communication graph
+        normalize_graph (bool): if True normalizes the communication graph
             adjacency matrix by the maximum eigenvalue (default: True)
-        doPrint (bool): If True prints messages (default: True)
-        dataType (dtype): datatype for the samples created (default: np.float64)
+        do_print (bool): If True prints messages (default: True)
+        data_type (dtype): datatype for the samples created (default: np.float64)
         device (device): if torch.Tensor datatype is selected, this is on what
             device the data is saved (default: 'cpu')
             
     Methods:
         
-    signals, targets = .getSamples(samplesType[, optionalArguments])
+    signals, targets = .get_samples(samples_type[, optional_arguments])
         Input:
-            samplesType (string): 'train', 'valid' or 'test' to determine from
+            samples_type (string): 'train', 'valid' or 'test' to determine from
                 which dataset to get the samples from
-            optionalArguments:
+            optional_arguments:
                 0 optional arguments: get all the samples from the specified set
                 1 optional argument (int): number of samples to get (at random)
                 1 optional argument (list): specific indices of samples to get
         Output:
-            signals (dtype.array): numberSamples x 6 x numberNodes
-            targets (dtype.array): numberSamples x 2 x numberNodes
+            signals (dtype.array): number_samples x 6 x number_nodes
+            targets (dtype.array): number_samples x 2 x number_nodes
             'signals' are the state variables as described in the corresponding
             paper; 'targets' is the 2-D acceleration for each node
             
-    cost = .evaluate(vel = None, accel = None, initVel = None,
-                     samplingTime = None)
+    cost = .evaluate(vel = None, accel = None, init_vel = None,
+                     sampling_time = None)
         Input:
-            vel (array): velocities; nSamples x tSamples x 2 x nAgents
-            accel (array): accelerations; nSamples x tSamples x 2 x nAgents
-            initVel (array): initial velocities; nSamples x 2 x nAgents
-            samplingTime (float): sampling time
-            >> Obs.: Either vel or (accel and initVel) have to be specified
+            vel (array): velocities; n_samples x t_samples x 2 x n_agents
+            accel (array): accelerations; n_samples x t_samples x 2 x n_agents
+            init_vel (array): initial velocities; n_samples x 2 x n_agents
+            sampling_time (float): sampling time
+            >> Obs.: Either vel or (accel and init_vel) have to be specified
             for the cost to be computed, if all of them are specified, only
             vel is used
         Output:
             cost (float): flocking cost as specified in eq. (13)
 
-    .astype(dataType): change the type of the data matrix arrays.
+    .astype(data_type): change the type of the data matrix arrays.
         Input:
-            dataType (dtype): target type of the variables (e.g. torch.float64,
+            data_type (dtype): target type of the variables (e.g. torch.float64,
                 numpy.float64, etc.)
 
     .to(device): if dtype is torch.tensor, move them to the specified device.
@@ -384,26 +384,26 @@ class Flocking(_data):
             device (string): target device to move the variables to (e.g. 
                 'cpu', 'cuda:0', etc.)
 
-    state = .computeStates(pos, vel, graphMatrix, ['doPrint'])
+    state = .compute_states(pos, vel, graph_matrix, ['do_print'])
         Input:
-            pos (array): positions; nSamples x tSamples x 2 x nAgents
-            vel (array): velocities; nSamples x tSamples x 2 x nAgents
-            graphMatrix (array): matrix description of communication graph;
-                nSamples x tSamples x nAgents x nAgents
-            'doPrint' (bool): optional argument to print outputs; if not used
+            pos (array): positions; n_samples x t_samples x 2 x n_agents
+            vel (array): velocities; n_samples x t_samples x 2 x n_agents
+            graph_matrix (array): matrix description of communication graph;
+                n_samples x t_samples x n_agents x n_agents
+            'do_print' (bool): optional argument to print outputs; if not used
                 uses the same status set for the entire class in the
                 initialization
         Output:
-            state (array): states; nSamples x tSamples x 6 x nAgents
+            state (array): states; n_samples x t_samples x 6 x n_agents
     
-    graphMatrix = .computeCommunicationGraph(pos, commRadius, normalizeGraph,
-                    ['kernelType' = 'gaussian', 'weighted' = False, 'doPrint'])
+    graph_matrix = .compute_communication_graph(pos, comm_radius, normalize_graph,
+                    ['kernel_type' = 'gaussian', 'weighted' = False, 'do_print'])
         Input:
-            pos (array): positions; nSamples x tSamples x 2 x nAgents
-            commRadius (float): communication radius (in meters)
-            normalizeGraph (bool): if True normalize adjacency matrix by 
+            pos (array): positions; n_samples x t_samples x 2 x n_agents
+            comm_radius (float): communication radius (in meters)
+            normalize_graph (bool): if True normalize adjacency matrix by 
                 largest eigenvalue
-            'kernelType' ('gaussian'): kernel to apply to the distance in order
+            'kernel_type' ('gaussian'): kernel to apply to the distance in order
                 to compute the weights of the adjacency matrix, default is
                 the 'gaussian' kernel; other kernels have to be coded, and also
                 the parameters of the kernel have to be included as well, in
@@ -411,532 +411,532 @@ class Flocking(_data):
                 scale (default: 1.)
             'weighted' (bool): if True the graph is weighted according to the
                 kernel type; if False, it's just a binary adjacency matrix
-            'doPrint' (bool): optional argument to print outputs; if not used
+            'do_print' (bool): optional argument to print outputs; if not used
                 uses the same status set for the entire class in the
                 initialization
         Output:
-            graphMatrix (array): adjacency matrix of the communication graph;
-                nSamples x tSamples x nAgents x nAgents
+            graph_matrix (array): adjacency matrix of the communication graph;
+                n_samples x t_samples x n_agents x n_agents
     
-    thisData = .getData(name, samplesType[, optionalArguments])
+    this_data = .get_data(name, samples_type[, optional_arguments])
         Input:
             name (string): variable name to get (for example, 'pos', 'vel', 
                 etc.)
-            samplesType ('train', 'test' or 'valid')
-            optionalArguments:
+            samples_type ('train', 'test' or 'valid')
+            optional_arguments:
                 0 optional arguments: get all the samples from the specified set
                 1 optional argument (int): number of samples to get (at random)
                 1 optional argument (list): specific indices of samples to get
         Output:
-            thisData (array): specific type of data requested
+            this_data (array): specific type of data requested
     
-    pos, vel[, accel, state, graph] = computeTrajectory(initPos, initVel,
+    pos, vel[, accel, state, graph] = compute_trajectory(init_pos, init_vel,
                                             duration[, 'archit', 'accel',
-                                            'doPrint'])
+                                            'do_print'])
         Input:
-            initPos (array): initial positions; nSamples x 2 x nAgents
-            initVel (array): initial velocities; nSamples x 2 x nAgents
+            init_pos (array): initial positions; n_samples x 2 x n_agents
+            init_vel (array): initial velocities; n_samples x 2 x n_agents
             duration (float): duration of trajectory (in seconds)
             Optional arguments: (either 'accel' or 'archit' have to be there)
             'archit' (nn.Module): torch architecture that computes the output
                 from the states
-            'accel' (array): accelerations; nSamples x tSamples x 2 x nAgents
-            'doPrint' (bool): optional argument to print outputs; if not used
+            'accel' (array): accelerations; n_samples x t_samples x 2 x n_agents
+            'do_print' (bool): optional argument to print outputs; if not used
                 uses the same status set for the entire class in the
                 initialization
         Output:
-            pos (array): positions; nSamples x tSamples x 2 x nAgents
-            vel (array): velocities; nSamples x tSamples x 2 x nAgents
+            pos (array): positions; n_samples x t_samples x 2 x n_agents
+            vel (array): velocities; n_samples x t_samples x 2 x n_agents
             Optional outputs (only if 'archit' was used)
-            accel (array): accelerations; nSamples x tSamples x 2 x nAgents
-            state (array): state; nSamples x tSamples x 6 x nAgents
+            accel (array): accelerations; n_samples x t_samples x 2 x n_agents
+            state (array): state; n_samples x t_samples x 6 x n_agents
             graph (array): adjacency matrix of communication graph;
-                nSamples x tSamples x nAgents x nAgents
+                n_samples x t_samples x n_agents x n_agents
             
-    uDiff, uDistSq = .computeDifferences (u):
+    u_diff, u_diff_sq = .compute_differences (u):
         Input:
-            u (array): nSamples (x tSamples) x 2 x nAgents
+            u (array): n_samples (x t_samples) x 2 x n_agents
         Output:
-            uDiff (array): pairwise differences between the agent entries of u;
-                nSamples (x tSamples) x 2 x nAgents x nAgents
-            uDistSq (array): squared distances between agent entries of u;
-                nSamples (x tSamples) x nAgents x nAgents
+            u_diff (array): pairwise differences between the agent entries of u;
+                n_samples (x t_samples) x 2 x n_agents x n_agents
+            u_diff_sq (array): squared distances between agent entries of u;
+                n_samples (x t_samples) x n_agents x n_agents
     
-    pos, vel, accel = .computeOptimalTrajectory(initPos, initVel, duration, 
-                                                samplingTime, repelDist,
-                                                accelMax = 100.)
+    pos, vel, accel = .compute_optimal_trajectory(init_pos, init_vel, duration, 
+                                                sampling_time, repel_dist,
+                                                accel_max = 100.)
         Input:
-            initPos (array): initial positions; nSamples x 2 x nAgents
-            initVel (array): initial velocities; nSamples x 2 x nAgents
+            init_pos (array): initial positions; n_samples x 2 x n_agents
+            init_vel (array): initial velocities; n_samples x 2 x n_agents
             duration (float): duration of trajectory (in seconds)
-            samplingTime (float): time elapsed between consecutive time 
+            sampling_time (float): time elapsed between consecutive time 
                 instants (in seconds)
-            repelDist (float): minimum desired distance between agents (in m)
-            accelMax (float, default = 100.): maximum possible acceleration
+            repel_dist (float): minimum desired distance between agents (in m)
+            accel_max (float, default = 100.): maximum possible acceleration
         Output:
-            pos (array): positions; nSamples x tSamples x 2 x nAgents
-            vel (array): velocities; nSamples x tSamples x 2 x nAgents
-            accel (array): accelerations; nSamples x tSamples x 2 x nAgents
+            pos (array): positions; n_samples x t_samples x 2 x n_agents
+            vel (array): velocities; n_samples x t_samples x 2 x n_agents
+            accel (array): accelerations; n_samples x t_samples x 2 x n_agents
             
-    initPos, initVel = .computeInitialPositions(nAgents, nSamples, commRadius,
-                                                minDist = 0.1,
+    init_pos, init_vel = .compute_initial_positions(n_agents, n_samples, comm_radius,
+                                                min_dist = 0.1,
                                                 geometry = 'rectangular',
-                                                xMaxInitVel = 3.,
-                                                yMaxInitVel = 3.)
+                                                x_max_init_vel = 3.,
+                                                y_max_init_vel = 3.)
         Input:
-            nAgents (int): number of agents
-            nSamples (int): number of sample trajectories
-            commRadius (float): communication radius (in meters)
-            minDist (float): minimum initial distance between agents (in m)
+            n_agents (int): number of agents
+            n_samples (int): number of sample trajectories
+            comm_radius (float): communication radius (in meters)
+            min_dist (float): minimum initial distance between agents (in m)
             geometry ('rectangular', 'circular'): initial geometry
-            xMaxInitVel (float): maximum velocity in the x-axis
-            yMaxInitVel (float): maximum velocity in the y-axis
+            x_max_init_vel (float): maximum velocity in the x-axis
+            y_max_init_vel (float): maximum velocity in the y-axis
         Output:
-            initPos (array): initial positions; nSamples x 2 x nAgents
-            initVel (array): initial velocities; nSamples x 2 x nAgents
+            init_pos (array): initial positions; n_samples x 2 x n_agents
+            init_vel (array): initial velocities; n_samples x 2 x n_agents
     
-    .saveVideo(saveDir, pos, [, optionalArguments], commGraph = None,
-               [optionalKeyArguments])
+    .save_video(save_dir, pos, [, optional_arguments], comm_graph = None,
+               [optional_key_arguments])
         Input:
-            saveDir (os.path, string): directory where to save the trajectory
+            save_dir (os.path, string): directory where to save the trajectory
                 videos
-            pos (array): positions; nSamples x tSamples x 2 x nAgents
-            optionalArguments:
+            pos (array): positions; n_samples x t_samples x 2 x n_agents
+            optional_arguments:
                 0 optional arguments: get all the samples from the specified set
                 1 optional argument (int): number of samples to get (at random)
                 1 optional argument (list): specific indices of samples to get
-            commGraph (array): adjacency matrix of communication graph;
-                nSamples x tSamples x nAgents x nAgents
+            comm_graph (array): adjacency matrix of communication graph;
+                n_samples x t_samples x n_agents x n_agents
                 if not None, then this array is used to produce snapshots of
                 the video that include the communication graph at that time
                 instant
-            'doPrint' (bool): optional argument to print outputs; if not used
+            'do_print' (bool): optional argument to print outputs; if not used
                 uses the same status set for the entire class in the
                 initialization
-            'videoSpeed' (float): how faster or slower the video is reproduced
+            'video_speed' (float): how faster or slower the video is reproduced
                 (default: 1.)
-            'showVideoSpeed' (bool): if True shows the legend with the video
+            'show_video_speed' (bool): if True shows the legend with the video
                 speed in the video; by default it will show it whenever the
                 video speed is different from 1.
-            'vel' (array): velocities; nSamples x tSamples x 2 x nAgents
-            'showCost' (bool): if True and velocities are set, the snapshots
+            'vel' (array): velocities; n_samples x t_samples x 2 x n_agents
+            'show_cost' (bool): if True and velocities are set, the snapshots
                 will show the instantaneous cost (default: True)
-            'showArrows' (bool): if True and velocities are set, the snapshots
+            'show_arrows' (bool): if True and velocities are set, the snapshots
                 will show the arrows of the velocities (default: True)
             
             
     """
     
-    def __init__(self, nAgents, commRadius, repelDist,
-                 nTrain, nValid, nTest,
-                 duration, samplingTime,
-                 initGeometry = 'circular',initVelValue = 3.,initMinDist = 0.1,
-                 accelMax = 10.,
-                 normalizeGraph = True, doPrint = True,
-                 dataType = np.float64, device = 'cpu'):
+    def __init__(self, n_agents, comm_radius, repel_dist,
+                 n_train, n_valid, n_test,
+                 duration, sampling_time,
+                 init_geometry = 'circular',init_vel_value = 3.,init_min_dist = 0.1,
+                 accel_max = 10.,
+                 normalize_graph = True, do_print = True,
+                 data_type = np.float64, device = 'cpu'):
         
         # Initialize parent class
         super().__init__()
         # Save the relevant input information
         #   Number of nodes
-        self.nAgents = nAgents
-        self.commRadius = commRadius
-        self.repelDist = repelDist
+        self.n_agents = n_agents
+        self.comm_radius = comm_radius
+        self.repel_dist = repel_dist
         #   Number of samples
-        self.nTrain = nTrain
-        self.nValid = nValid
-        self.nTest = nTest
-        nSamples = nTrain + nValid + nTest
+        self.n_train = n_train
+        self.n_valid = n_valid
+        self.n_test = n_test
+        n_samples = n_train + n_valid + n_test
         #   Geometry
-        self.mapWidth = None
-        self.mapHeight = None
+        self.map_width = None
+        self.map_height = None
         #   Agents
-        self.initGeometry = initGeometry
-        self.initVelValue = initVelValue
-        self.initMinDist = initMinDist
-        self.accelMax = accelMax
+        self.init_geometry = init_geometry
+        self.init_vel_value = init_vel_value
+        self.init_min_dist = init_min_dist
+        self.accel_max = accel_max
         #   Duration of the trajectory
         self.duration = float(duration)
-        self.samplingTime = samplingTime
+        self.sampling_time = sampling_time
         #   Data
-        self.normalizeGraph = normalizeGraph
-        self.dataType = dataType
+        self.normalize_graph = normalize_graph
+        self.data_type = data_type
         self.device = device
         #   Options
-        self.doPrint = doPrint
+        self.do_print = do_print
         
         #   Places to store the data
-        self.initPos = None
-        self.initVel = None
+        self.init_pos = None
+        self.init_vel = None
         self.pos = None
         self.vel = None
         self.accel = None
-        self.commGraph = None
+        self.comm_graph = None
         self.state = None
         
-        if self.doPrint:
+        if self.do_print:
             print("\tComputing initial conditions...", end = ' ', flush = True)
         
         # Compute the initial positions
-        initPosAll, initVelAll = self.computeInitialPositions(
-                                          self.nAgents, nSamples, self.commRadius,
-                                          minDist = self.initMinDist,
-                                          geometry = self.initGeometry,
-                                          xMaxInitVel = self.initVelValue,
-                                          yMaxInitVel = self.initVelValue
+        init_pos_all, init_vel_all = self.compute_initial_positions(
+                                          self.n_agents, n_samples, self.comm_radius,
+                                          min_dist = self.init_min_dist,
+                                          geometry = self.init_geometry,
+                                          x_max_init_vel = self.init_vel_value,
+                                          y_max_init_vel = self.init_vel_value
                                                               )
         #   Once we have all positions and velocities, we will need to split 
         #   them in the corresponding datasets (train, valid and test)
-        self.initPos = {}
-        self.initVel = {}
+        self.init_pos = {}
+        self.init_vel = {}
         
-        if self.doPrint:
+        if self.do_print:
             print("OK", flush = True)
             # Erase the label first, then print it
             print("\tComputing the optimal trajectories...",
                   end=' ', flush=True)
         
         # Compute the optimal trajectory
-        posAll, velAll, accelAll = self.computeOptimalTrajectory(
-                                        initPosAll, initVelAll, self.duration,
-                                        self.samplingTime, self.repelDist,
-                                        accelMax = self.accelMax)
+        pos_all, vel_all, accel_all = self.compute_optimal_trajectory(
+                                        init_pos_all, init_vel_all, self.duration,
+                                        self.sampling_time, self.repel_dist,
+                                        accel_max = self.accel_max)
         
         self.pos = {}
         self.vel = {}
         self.accel = {}
         
-        if self.doPrint:
+        if self.do_print:
             print("OK", flush = True)
             # Erase the label first, then print it
             print("\tComputing the communication graphs...",
                   end=' ', flush=True)
         
         # Compute communication graph
-        commGraphAll = self.computeCommunicationGraph(posAll, self.commRadius,
-                                                      self.normalizeGraph)
+        comm_graph_all = self.compute_communication_graph(pos_all, self.comm_radius,
+                                                      self.normalize_graph)
         
-        self.commGraph = {}
+        self.comm_graph = {}
         
-        if self.doPrint:
+        if self.do_print:
             print("OK", flush = True)
             # Erase the label first, then print it
             print("\tComputing the agent states...", end = ' ', flush = True)
         
         # Compute the states
-        stateAll = self.computeStates(posAll, velAll, commGraphAll)
+        state_all = self.compute_states(pos_all, vel_all, comm_graph_all)
         
         self.state = {}
         
-        if self.doPrint:
+        if self.do_print:
             # Erase the label
             print("OK", flush = True)
         
         # Separate the states into training, validation and testing samples
         # and save them
         #   Training set
-        self.samples['train']['signals'] = stateAll[0:self.nTrain].copy()
-        self.samples['train']['targets'] = accelAll[0:self.nTrain].copy()
-        self.initPos['train'] = initPosAll[0:self.nTrain]
-        self.initVel['train'] = initVelAll[0:self.nTrain]
-        self.pos['train'] = posAll[0:self.nTrain]
-        self.vel['train'] = velAll[0:self.nTrain]
-        self.accel['train'] = accelAll[0:self.nTrain]
-        self.commGraph['train'] = commGraphAll[0:self.nTrain]
-        self.state['train'] = stateAll[0:self.nTrain]
+        self.samples['train']['signals'] = state_all[0:self.n_train].copy()
+        self.samples['train']['targets'] = accel_all[0:self.n_train].copy()
+        self.init_pos['train'] = init_pos_all[0:self.n_train]
+        self.init_vel['train'] = init_vel_all[0:self.n_train]
+        self.pos['train'] = pos_all[0:self.n_train]
+        self.vel['train'] = vel_all[0:self.n_train]
+        self.accel['train'] = accel_all[0:self.n_train]
+        self.comm_graph['train'] = comm_graph_all[0:self.n_train]
+        self.state['train'] = state_all[0:self.n_train]
         #   Validation set
-        startSample = self.nTrain
-        endSample = self.nTrain + self.nValid
-        self.samples['valid']['signals']=stateAll[startSample:endSample].copy()
-        self.samples['valid']['targets']=accelAll[startSample:endSample].copy()
-        self.initPos['valid'] = initPosAll[startSample:endSample]
-        self.initVel['valid'] = initVelAll[startSample:endSample]
-        self.pos['valid'] = posAll[startSample:endSample]
-        self.vel['valid'] = velAll[startSample:endSample]
-        self.accel['valid'] = accelAll[startSample:endSample]
-        self.commGraph['valid'] = commGraphAll[startSample:endSample]
-        self.state['valid'] = stateAll[startSample:endSample]
+        start_sample = self.n_train
+        end_sample = self.n_train + self.n_valid
+        self.samples['valid']['signals']=state_all[start_sample:end_sample].copy()
+        self.samples['valid']['targets']=accel_all[start_sample:end_sample].copy()
+        self.init_pos['valid'] = init_pos_all[start_sample:end_sample]
+        self.init_vel['valid'] = init_vel_all[start_sample:end_sample]
+        self.pos['valid'] = pos_all[start_sample:end_sample]
+        self.vel['valid'] = vel_all[start_sample:end_sample]
+        self.accel['valid'] = accel_all[start_sample:end_sample]
+        self.comm_graph['valid'] = comm_graph_all[start_sample:end_sample]
+        self.state['valid'] = state_all[start_sample:end_sample]
         #   Testing set
-        startSample = self.nTrain + self.nValid
-        endSample = self.nTrain + self.nValid + self.nTest
-        self.samples['test']['signals']=stateAll[startSample:endSample].copy()
-        self.samples['test']['targets']=accelAll[startSample:endSample].copy()
-        self.initPos['test'] = initPosAll[startSample:endSample]
-        self.initVel['test'] = initVelAll[startSample:endSample]
-        self.pos['test'] = posAll[startSample:endSample]
-        self.vel['test'] = velAll[startSample:endSample]
-        self.accel['test'] = accelAll[startSample:endSample]
-        self.commGraph['test'] = commGraphAll[startSample:endSample]
-        self.state['test'] = stateAll[startSample:endSample]
+        start_sample = self.n_train + self.n_valid
+        end_sample = self.n_train + self.n_valid + self.n_test
+        self.samples['test']['signals']=state_all[start_sample:end_sample].copy()
+        self.samples['test']['targets']=accel_all[start_sample:end_sample].copy()
+        self.init_pos['test'] = init_pos_all[start_sample:end_sample]
+        self.init_vel['test'] = init_vel_all[start_sample:end_sample]
+        self.pos['test'] = pos_all[start_sample:end_sample]
+        self.vel['test'] = vel_all[start_sample:end_sample]
+        self.accel['test'] = accel_all[start_sample:end_sample]
+        self.comm_graph['test'] = comm_graph_all[start_sample:end_sample]
+        self.state['test'] = state_all[start_sample:end_sample]
         
         # Change data to specified type and device
-        self.astype(self.dataType)
+        self.astype(self.data_type)
         self.to(self.device)
         
-    def astype(self, dataType):
+    def astype(self, data_type):
         
         # Change all other signals to the correct place
-        datasetType = ['train', 'valid', 'test']
-        for key in datasetType:
-            self.initPos[key] = changeDataType(self.initPos[key], dataType)
-            self.initVel[key] = changeDataType(self.initVel[key], dataType)
-            self.pos[key] = changeDataType(self.pos[key], dataType)
-            self.vel[key] = changeDataType(self.vel[key], dataType)
-            self.accel[key] = changeDataType(self.accel[key], dataType)
-            self.commGraph[key] = changeDataType(self.commGraph[key], dataType)
-            self.state[key] = changeDataType(self.state[key], dataType)
+        dataset_type = ['train', 'valid', 'test']
+        for key in dataset_type:
+            self.init_pos[key] = change_data_type(self.init_pos[key], data_type)
+            self.init_vel[key] = change_data_type(self.init_vel[key], data_type)
+            self.pos[key] = change_data_type(self.pos[key], data_type)
+            self.vel[key] = change_data_type(self.vel[key], data_type)
+            self.accel[key] = change_data_type(self.accel[key], data_type)
+            self.comm_graph[key] = change_data_type(self.comm_graph[key], data_type)
+            self.state[key] = change_data_type(self.state[key], data_type)
         
         # And call the parent
-        super().astype(dataType)
+        super().astype(data_type)
         
     def to(self, device):
         
         # Check the data is actually torch
-        if 'torch' in repr(self.dataType):
-            datasetType = ['train', 'valid', 'test']
+        if 'torch' in repr(self.data_type):
+            dataset_type = ['train', 'valid', 'test']
             # Move the data
-            for key in datasetType:
-                self.initPos[key].to(device)
-                self.initVel[key].to(device)
+            for key in dataset_type:
+                self.init_pos[key].to(device)
+                self.init_vel[key].to(device)
                 self.pos[key].to(device)
                 self.vel[key].to(device)
                 self.accel[key].to(device)
-                self.commGraph[key].to(device)
+                self.comm_graph[key].to(device)
                 self.state[key].to(device)
             
             super().to(device)
             
-    def expandDims(self):
+    def expand_dims(self):
         # Just avoid the 'expandDims' method in the parent class
         pass
         
-    def computeStates(self, pos, vel, graphMatrix, **kwargs):
+    def compute_states(self, pos, vel, graph_matrix, **kwargs):
         
         # We get the following inputs.
-        # positions: nSamples x tSamples x 2 x nAgents
-        # velocities: nSamples x tSamples x 2 x nAgents
-        # graphMatrix: nSaples x tSamples x nAgents x nAgents
+        # positions: n_samples x t_samples x 2 x n_agents
+        # velocities: n_samples x t_samples x 2 x n_agents
+        # graph_matrix: nSaples x t_samples x n_agents x n_agents
         
         # And we want to build the state, which is a vector of dimension 6 on 
         # each node, that is, the output shape is
-        #   nSamples x tSamples x 6 x nAgents
+        #   n_samples x t_samples x 6 x n_agents
         
         # The print for this one can be settled independently, if not, use the
         # default of the data object
-        if 'doPrint' in kwargs.keys():
-            doPrint = kwargs['doPrint']
+        if 'do_print' in kwargs.keys():
+            do_print = kwargs['do_print']
         else:
-            doPrint = self.doPrint
+            do_print = self.do_print
         
         # Check correct dimensions
-        assert len(pos.shape) == len(vel.shape) == len(graphMatrix.shape) == 4
-        nSamples = pos.shape[0]
-        tSamples = pos.shape[1]
+        assert len(pos.shape) == len(vel.shape) == len(graph_matrix.shape) == 4
+        n_samples = pos.shape[0]
+        t_samples = pos.shape[1]
         assert pos.shape[2] == 2
-        nAgents = pos.shape[3]
-        assert vel.shape[0] == graphMatrix.shape[0] == nSamples
-        assert vel.shape[1] == graphMatrix.shape[1] == tSamples
+        n_agents = pos.shape[3]
+        assert vel.shape[0] == graph_matrix.shape[0] == n_samples
+        assert vel.shape[1] == graph_matrix.shape[1] == t_samples
         assert vel.shape[2] == 2
-        assert vel.shape[3] == graphMatrix.shape[2] == graphMatrix.shape[3] \
-                == nAgents
+        assert vel.shape[3] == graph_matrix.shape[2] == graph_matrix.shape[3] \
+                == n_agents
                 
         # If we have a lot of batches and a particularly long sequence, this
         # is bound to fail, memory-wise, so let's do it time instant by time
         # instant if we have a large number of time instants, and split the
         # batches
-        maxTimeSamples = 200 # Set the maximum number of t.Samples before
+        max_time_samples = 200 # Set the maximum number of t.Samples before
             # which to start doing this time by time.
-        maxBatchSize = 100 # Maximum number of samples to process at a given
+        max_batch_size = 100 # Maximum number of samples to process at a given
             # time
         
         # Compute the number of samples, and split the indices accordingly
-        if nSamples < maxBatchSize:
-            nBatches = 1
-            batchSize = [nSamples]
-        elif nSamples % maxBatchSize != 0:
+        if n_samples < max_batch_size:
+            n_batches = 1
+            batch_size = [n_samples]
+        elif n_samples % max_batch_size != 0:
             # If we know it's not divisible, then we do floor division and
             # add one more batch
-            nBatches = nSamples // maxBatchSize + 1
-            batchSize = [maxBatchSize] * nBatches
+            n_batches = n_samples // max_batch_size + 1
+            batch_size = [max_batch_size] * n_batches
             # But the last batch is actually smaller, so just add the 
             # remaining ones
-            batchSize[-1] = nSamples - sum(batchSize[0:-1])
+            batch_size[-1] = n_samples - sum(batch_size[0:-1])
         # If they fit evenly, then just do so.
         else:
-            nBatches = int(nSamples/maxBatchSize)
-            batchSize = [maxBatchSize] * nBatches
-        # batchIndex is used to determine the first and last element of each
+            n_batches = int(n_samples/max_batch_size)
+            batch_size = [max_batch_size] * n_batches
+        # batch_index is used to determine the first and last element of each
         # batch. We need to add the 0 because it's the first index.
-        batchIndex = np.cumsum(batchSize).tolist()
-        batchIndex = [0] + batchIndex
+        batch_index = np.cumsum(batch_size).tolist()
+        batch_index = [0] + batch_index
         
         # Create the output state variable
-        state = np.zeros((nSamples, tSamples, 6, nAgents))
+        state = np.zeros((n_samples, t_samples, 6, n_agents))
         
-        for b in range(nBatches):
+        for b in range(n_batches):
             
             # Pick the batch elements
-            posBatch = pos[batchIndex[b]:batchIndex[b+1]]
-            velBatch = vel[batchIndex[b]:batchIndex[b+1]]
-            graphMatrixBatch = graphMatrix[batchIndex[b]:batchIndex[b+1]]
+            pos_batch = pos[batch_index[b]:batch_index[b+1]]
+            vel_batch = vel[batch_index[b]:batch_index[b+1]]
+            graph_matrix_batch = graph_matrix[batch_index[b]:batch_index[b+1]]
         
-            if tSamples > maxTimeSamples:
+            if t_samples > max_time_samples:
                 
                 # For each time instant
-                for t in range(tSamples):
+                for t in range(t_samples):
                     
                     # Now, we need to compute the differences, in velocities and in 
                     # positions, for each agent, for each time instant
-                    posDiff, posDistSq = \
-                                     self.computeDifferences(posBatch[:,t,:,:])
-                    #   posDiff: batchSize[b] x 2 x nAgents x nAgents
-                    #   posDistSq: batchSize[b] x nAgents x nAgents
-                    velDiff, _ = self.computeDifferences(velBatch[:,t,:,:])
-                    #   velDiff: batchSize[b] x 2 x nAgents x nAgents
+                    pos_diff, pos_dist_sq = \
+                                     self.compute_differences(pos_batch[:,t,:,:])
+                    #   pos_diff: batch_size[b] x 2 x n_agents x n_agents
+                    #   pos_dist_sq: batch_size[b] x n_agents x n_agents
+                    vel_diff, _ = self.compute_differences(vel_batch[:,t,:,:])
+                    #   vel_diff: batch_size[b] x 2 x n_agents x n_agents
                     
                     # Next, we need to get ride of all those places where there are
                     # no neighborhoods. That is given by the nonzero elements of the 
                     # graph matrix.
-                    graphMatrixTime = (np.abs(graphMatrixBatch[:,t,:,:])\
-                                                               >zeroTolerance)\
+                    graph_matrix_time = (np.abs(graph_matrix_batch[:,t,:,:])\
+                                                               >zero_tolerance)\
                                                              .astype(pos.dtype)
-                    #   graphMatrix: batchSize[b] x nAgents x nAgents
+                    #   graph_matrix: batch_size[b] x n_agents x n_agents
                     # We also need to invert the squares of the distances
-                    posDistSqInv = invertTensorEW(posDistSq)
-                    #   posDistSqInv: batchSize[b] x nAgents x nAgents
+                    pos_dist_sq_inv = invert_tensor_ew(pos_dist_sq)
+                    #   pos_dist_sq_inv: batch_size[b] x n_agents x n_agents
                     
                     # Now we add the extra dimensions so that all the 
                     # multiplications are adequate
-                    graphMatrixTime = np.expand_dims(graphMatrixTime, 1)
-                    #   graphMatrix: batchSize[b] x 1 x nAgents x nAgents
+                    graph_matrix_time = np.expand_dims(graph_matrix_time, 1)
+                    #   graph_matrix: batch_size[b] x 1 x n_agents x n_agents
                     
                     # Then, we can get rid of non-neighbors
-                    posDiff = posDiff * graphMatrixTime
-                    posDistSqInv = np.expand_dims(posDistSqInv,1)\
-                                                              * graphMatrixTime
-                    velDiff = velDiff * graphMatrixTime
+                    pos_diff = pos_diff * graph_matrix_time
+                    pos_dist_sq_inv = np.expand_dims(pos_dist_sq_inv,1)\
+                                                              * graph_matrix_time
+                    vel_diff = vel_diff * graph_matrix_time
                     
                     # Finally, we can compute the states
-                    stateVel = np.sum(velDiff, axis = 3)
-                    #   stateVel: batchSize[b] x 2 x nAgents
-                    statePosFourth = np.sum(posDiff * (posDistSqInv ** 2),
+                    state_vel = np.sum(vel_diff, axis = 3)
+                    #   state_vel: batch_size[b] x 2 x n_agents
+                    state_pos_fourth = np.sum(pos_diff * (pos_dist_sq_inv ** 2),
                                             axis = 3)
-                    #   statePosFourth: batchSize[b] x 2 x nAgents
-                    statePosSq = np.sum(posDiff * posDistSqInv, axis = 3)
-                    #   statePosSq: batchSize[b] x 2 x nAgents
+                    #   state_pos_fourth: batch_size[b] x 2 x n_agents
+                    state_pos_sq = np.sum(pos_diff * pos_dist_sq_inv, axis = 3)
+                    #   state_pos_sq: batch_size[b] x 2 x n_agents
                     
                     # Concatentate the states and return the result
-                    state[batchIndex[b]:batchIndex[b+1],t,:,:] = \
-                                                np.concatenate((stateVel,
-                                                                statePosFourth,
-                                                                statePosSq),
+                    state[batch_index[b]:batch_index[b+1],t,:,:] = \
+                                                np.concatenate((state_vel,
+                                                                state_pos_fourth,
+                                                                state_pos_sq),
                                                                axis = 1)
-                    #   batchSize[b] x 6 x nAgents
+                    #   batch_size[b] x 6 x n_agents
                     
-                    if doPrint:
+                    if do_print:
                         # Sample percentage count
-                        percentageCount = int(100*(t+1+b*tSamples)\
-                                                          /(nBatches*tSamples))
+                        percentage_count = int(100*(t+1+b*t_samples)\
+                                                          /(n_batches*t_samples))
                         
                         if t == 0 and b == 0:
                             # It's the first one, so just print it
-                            print("%3d%%" % percentageCount,
+                            print("%3d%%" % percentage_count,
                                   end = '', flush = True)
                         else:
                             # Erase the previous characters
-                            print('\b \b' * 4 + "%3d%%" % percentageCount,
+                            print('\b \b' * 4 + "%3d%%" % percentage_count,
                                   end = '', flush = True)
                 
             else:
                 
                 # Now, we need to compute the differences, in velocities and in 
                 # positions, for each agent, for each time instante
-                posDiff, posDistSq = self.computeDifferences(posBatch)
-                #   posDiff: batchSize[b] x tSamples x 2 x nAgents x nAgents
-                #   posDistSq: batchSize[b] x tSamples x nAgents x nAgents
-                velDiff, _ = self.computeDifferences(velBatch)
-                #   velDiff: batchSize[b] x tSamples x 2 x nAgents x nAgents
+                pos_diff, pos_dist_sq = self.compute_differences(pos_batch)
+                #   pos_diff: batch_size[b] x t_samples x 2 x n_agents x n_agents
+                #   pos_dist_sq: batch_size[b] x t_samples x n_agents x n_agents
+                vel_diff, _ = self.compute_differences(vel_batch)
+                #   vel_diff: batch_size[b] x t_samples x 2 x n_agents x n_agents
                 
                 # Next, we need to get ride of all those places where there are
                 # no neighborhoods. That is given by the nonzero elements of the 
                 # graph matrix.
-                graphMatrixBatch = (np.abs(graphMatrixBatch) > zeroTolerance)\
+                graph_matrix_batch = (np.abs(graph_matrix_batch) > zero_tolerance)\
                                                              .astype(pos.dtype)
-                #   graphMatrix: batchSize[b] x tSamples x nAgents x nAgents
+                #   graph_matrix: batch_size[b] x t_samples x n_agents x n_agents
                 # We also need to invert the squares of the distances
-                posDistSqInv = invertTensorEW(posDistSq)
-                #   posDistSqInv: batchSize[b] x tSamples x nAgents x nAgents
+                pos_dist_sq_inv = invert_tensor_ew(pos_dist_sq)
+                #   pos_dist_sq_inv: batch_size[b] x t_samples x n_agents x n_agents
                 
                 # Now we add the extra dimensions so that all the multiplications
                 # are adequate
-                graphMatrixBatch = np.expand_dims(graphMatrixBatch, 2)
-                #   graphMatrix:batchSize[b] x tSamples x 1 x nAgents x nAgents
+                graph_matrix_batch = np.expand_dims(graph_matrix_batch, 2)
+                #   graph_matrix:batch_size[b] x t_samples x 1 x n_agents x n_agents
                 
                 # Then, we can get rid of non-neighbors
-                posDiff = posDiff * graphMatrixBatch
-                posDistSqInv = np.expand_dims(posDistSqInv, 2)\
-                                                             * graphMatrixBatch
-                velDiff = velDiff * graphMatrixBatch
+                pos_diff = pos_diff * graph_matrix_batch
+                pos_dist_sq_inv = np.expand_dims(pos_dist_sq_inv, 2)\
+                                                             * graph_matrix_batch
+                vel_diff = vel_diff * graph_matrix_batch
                 
                 # Finally, we can compute the states
-                stateVel = np.sum(velDiff, axis = 4)
-                #   stateVel: batchSize[b] x tSamples x 2 x nAgents
-                statePosFourth = np.sum(posDiff * (posDistSqInv ** 2), axis = 4)
-                #   statePosFourth: batchSize[b] x tSamples x 2 x nAgents
-                statePosSq = np.sum(posDiff * posDistSqInv, axis = 4)
-                #   statePosSq: batchSize[b] x tSamples x 2 x nAgents
+                state_vel = np.sum(vel_diff, axis = 4)
+                #   state_vel: batch_size[b] x t_samples x 2 x n_agents
+                state_pos_fourth = np.sum(pos_diff * (pos_dist_sq_inv ** 2), axis = 4)
+                #   state_pos_fourth: batch_size[b] x t_samples x 2 x n_agents
+                state_pos_sq = np.sum(pos_diff * pos_dist_sq_inv, axis = 4)
+                #   state_pos_sq: batch_size[b] x t_samples x 2 x n_agents
                 
                 # Concatentate the states and return the result
-                state[batchIndex[b]:batchIndex[b+1]] = \
-                                                np.concatenate((stateVel,
-                                                                statePosFourth,
-                                                                statePosSq),
+                state[batch_index[b]:batch_index[b+1]] = \
+                                                np.concatenate((state_vel,
+                                                                state_pos_fourth,
+                                                                state_pos_sq),
                                                                axis = 2)
-                #   state: batchSize[b] x tSamples x 6 x nAgents
+                #   state: batch_size[b] x t_samples x 6 x n_agents
                                                 
-                if doPrint:
+                if do_print:
                     # Sample percentage count
-                    percentageCount = int(100*(b+1)/nBatches)
+                    percentage_count = int(100*(b+1)/n_batches)
                     
                     if b == 0:
                         # It's the first one, so just print it
-                        print("%3d%%" % percentageCount,
+                        print("%3d%%" % percentage_count,
                               end = '', flush = True)
                     else:
                         # Erase the previous characters
-                        print('\b \b' * 4 + "%3d%%" % percentageCount,
+                        print('\b \b' * 4 + "%3d%%" % percentage_count,
                               end = '', flush = True)
                         
         # Print
-        if doPrint:
+        if do_print:
             # Erase the percentage
             print('\b \b' * 4, end = '', flush = True)
         
         return state
         
-    def computeCommunicationGraph(self, pos, commRadius, normalizeGraph,
+    def compute_communication_graph(self, pos, comm_radius, normalize_graph,
                                   **kwargs):
         
         # Take in the position and the communication radius, and return the
         # trajectory of communication graphs
         # Input will be of shape
-        #   nSamples x tSamples x 2 x nAgents
+        #   n_samples x t_samples x 2 x n_agents
         # Output will be of shape
-        #   nSamples x tSamples x nAgents x nAgents
+        #   n_samples x t_samples x n_agents x n_agents
         
-        assert commRadius > 0
+        assert comm_radius > 0
         assert len(pos.shape) == 4
-        nSamples = pos.shape[0]
-        tSamples = pos.shape[1]
+        n_samples = pos.shape[0]
+        t_samples = pos.shape[1]
         assert pos.shape[2] == 2
-        nAgents = pos.shape[3]
+        n_agents = pos.shape[3]
         
         # Graph type options
         #   Kernel type (only Gaussian implemented so far)
-        if 'kernelType' in kwargs.keys():
-            kernelType = kwargs['kernelType']
+        if 'kernel_type' in kwargs.keys():
+            kernel_type = kwargs['kernel_type']
         else:
-            kernelType = 'gaussian'
+            kernel_type = 'gaussian'
         #   Decide if the graph is weighted or not
         if 'weighted' in kwargs.keys():
             weighted = kwargs['weighted']
@@ -944,191 +944,191 @@ class Flocking(_data):
             weighted = False
         
         # If it is a Gaussian kernel, we need to determine the scale
-        if kernelType == 'gaussian':
-            if 'kernelScale' in kwargs.keys():
-                kernelScale = kwargs['kernelScale']
+        if kernel_type == 'gaussian':
+            if 'kernel_scale' in kwargs.keys():
+                kernel_scale = kwargs['kernel_scale']
             else:
-                kernelScale = 1.
+                kernel_scale = 1.
         
         # The print for this one can be settled independently, if not, use the
         # default of the data object
-        if 'doPrint' in kwargs.keys():
-            doPrint = kwargs['doPrint']
+        if 'do_print' in kwargs.keys():
+            do_print = kwargs['do_print']
         else:
-            doPrint = self.doPrint
+            do_print = self.do_print
                 
         # If we have a lot of batches and a particularly long sequence, this
         # is bound to fail, memory-wise, so let's do it time instant by time
         # instant if we have a large number of time instants, and split the
         # batches
-        maxTimeSamples = 200 # Set the maximum number of t.Samples before
+        max_time_samples = 200 # Set the maximum number of t.Samples before
             # which to start doing this time by time.
-        maxBatchSize = 100 # Maximum number of samples to process at a given
+        max_batch_size = 100 # Maximum number of samples to process at a given
             # time
         
         # Compute the number of samples, and split the indices accordingly
-        if nSamples < maxBatchSize:
-            nBatches = 1
-            batchSize = [nSamples]
-        elif nSamples % maxBatchSize != 0:
+        if n_samples < max_batch_size:
+            n_batches = 1
+            batch_size = [n_samples]
+        elif n_samples % max_batch_size != 0:
             # If we know it's not divisible, then we do floor division and
             # add one more batch
-            nBatches = nSamples // maxBatchSize + 1
-            batchSize = [maxBatchSize] * nBatches
+            n_batches = n_samples // max_batch_size + 1
+            batch_size = [max_batch_size] * n_batches
             # But the last batch is actually smaller, so just add the 
             # remaining ones
-            batchSize[-1] = nSamples - sum(batchSize[0:-1])
+            batch_size[-1] = n_samples - sum(batch_size[0:-1])
         # If they fit evenly, then just do so.
         else:
-            nBatches = int(nSamples/maxBatchSize)
-            batchSize = [maxBatchSize] * nBatches
-        # batchIndex is used to determine the first and last element of each
+            n_batches = int(n_samples/max_batch_size)
+            batch_size = [max_batch_size] * n_batches
+        # batch_index is used to determine the first and last element of each
         # batch. We need to add the 0 because it's the first index.
-        batchIndex = np.cumsum(batchSize).tolist()
-        batchIndex = [0] + batchIndex
+        batch_index = np.cumsum(batch_size).tolist()
+        batch_index = [0] + batch_index
         
         # Create the output state variable
-        graphMatrix = np.zeros((nSamples, tSamples, nAgents, nAgents))
+        graph_matrix = np.zeros((n_samples, t_samples, n_agents, n_agents))
         
-        for b in range(nBatches):
+        for b in range(n_batches):
             
             # Pick the batch elements
-            posBatch = pos[batchIndex[b]:batchIndex[b+1]]
+            pos_batch = pos[batch_index[b]:batch_index[b+1]]
                 
-            if tSamples > maxTimeSamples:
+            if t_samples > max_time_samples:
                 # If the trajectories are longer than 200 points, then do it 
                 # time by time.
                 
                 # For each time instant
-                for t in range(tSamples):
+                for t in range(t_samples):
                     
                     # Let's start by computing the distance squared
-                    _, distSq = self.computeDifferences(posBatch[:,t,:,:])
+                    _, dist_sq = self.compute_differences(pos_batch[:,t,:,:])
                     # Apply the Kernel
-                    if kernelType == 'gaussian':
-                        graphMatrixTime = np.exp(-kernelScale * distSq)
+                    if kernel_type == 'gaussian':
+                        graph_matrix_time = np.exp(-kernel_scale * dist_sq)
                     else:
-                        graphMatrixTime = distSq
+                        graph_matrix_time = dist_sq
                     # Now let's place zeros in all places whose distance is greater
                     # than the radius
-                    graphMatrixTime[distSq > (commRadius ** 2)] = 0.
+                    graph_matrix_time[dist_sq > (comm_radius ** 2)] = 0.
                     # Set the diagonal elements to zero
-                    graphMatrixTime[:,\
-                                    np.arange(0,nAgents),np.arange(0,nAgents)]\
+                    graph_matrix_time[:,\
+                                    np.arange(0,n_agents),np.arange(0,n_agents)]\
                                                                            = 0.
                     # If it is unweighted, force all nonzero values to be 1
                     if not weighted:
-                        graphMatrixTime = (graphMatrixTime > zeroTolerance)\
-                                                          .astype(distSq.dtype)
+                        graph_matrix_time = (graph_matrix_time > zero_tolerance)\
+                                                          .astype(dist_sq.dtype)
                                                               
-                    if normalizeGraph:
-                        isSymmetric = np.allclose(graphMatrixTime,
-                                                  np.transpose(graphMatrixTime,
+                    if normalize_graph:
+                        is_symmetric = np.allclose(graph_matrix_time,
+                                                  np.transpose(graph_matrix_time,
                                                                axes = [0,2,1]))
                         # Tries to make the computation faster, only the 
                         # eigenvalues (while there is a cost involved in 
                         # computing whether the matrix is symmetric, 
                         # experiments found that it is still faster to use the
                         # symmetric algorithm for the eigenvalues)
-                        if isSymmetric:
-                            W = np.linalg.eigvalsh(graphMatrixTime)
+                        if is_symmetric:
+                            W = np.linalg.eigvalsh(graph_matrix_time)
                         else:
-                            W = np.linalg.eigvals(graphMatrixTime)
-                        maxEigenvalue = np.max(np.real(W), axis = 1)
-                        #   batchSize[b]
+                            W = np.linalg.eigvals(graph_matrix_time)
+                        max_eigenvalue = np.max(np.real(W), axis = 1)
+                        #   batch_size[b]
                         # Reshape to be able to divide by the graph matrix
-                        maxEigenvalue=maxEigenvalue.reshape((batchSize[b],1,1))
+                        max_eigenvalue=max_eigenvalue.reshape((batch_size[b],1,1))
                         # Normalize
-                        graphMatrixTime = graphMatrixTime / maxEigenvalue
+                        graph_matrix_time = graph_matrix_time / max_eigenvalue
                                                               
                     # And put it in the corresponding time instant
-                    graphMatrix[batchIndex[b]:batchIndex[b+1],t,:,:] = \
-                                                                graphMatrixTime
+                    graph_matrix[batch_index[b]:batch_index[b+1],t,:,:] = \
+                                                                graph_matrix_time
                     
-                    if doPrint:
+                    if do_print:
                         # Sample percentage count
-                        percentageCount = int(100*(t+1+b*tSamples)\
-                                                          /(nBatches*tSamples))
+                        percentage_count = int(100*(t+1+b*t_samples)\
+                                                          /(n_batches*t_samples))
                         
                         if t == 0 and b == 0:
                             # It's the first one, so just print it
-                            print("%3d%%" % percentageCount,
+                            print("%3d%%" % percentage_count,
                                   end = '', flush = True)
                         else:
                             # Erase the previous characters
-                            print('\b \b' * 4 + "%3d%%" % percentageCount,
+                            print('\b \b' * 4 + "%3d%%" % percentage_count,
                                   end = '', flush = True)
                 
             else:
                 # Let's start by computing the distance squared
-                _, distSq = self.computeDifferences(posBatch)
+                _, dist_sq = self.compute_differences(pos_batch)
                 # Apply the Kernel
-                if kernelType == 'gaussian':
-                    graphMatrixBatch = np.exp(-kernelScale * distSq)
+                if kernel_type == 'gaussian':
+                    graph_matrix_batch = np.exp(-kernel_scale * dist_sq)
                 else:
-                    graphMatrixBatch = distSq
+                    graph_matrix_batch = dist_sq
                 # Now let's place zeros in all places whose distance is greater
                 # than the radius
-                graphMatrixBatch[distSq > (commRadius ** 2)] = 0.
+                graph_matrix_batch[dist_sq > (comm_radius ** 2)] = 0.
                 # Set the diagonal elements to zero
-                graphMatrixBatch[:,:,
-                                 np.arange(0,nAgents),np.arange(0,nAgents)] =0.
+                graph_matrix_batch[:,:,
+                                 np.arange(0,n_agents),np.arange(0,n_agents)] =0.
                 # If it is unweighted, force all nonzero values to be 1
                 if not weighted:
-                    graphMatrixBatch = (graphMatrixBatch > zeroTolerance)\
-                                                          .astype(distSq.dtype)
+                    graph_matrix_batch = (graph_matrix_batch > zero_tolerance)\
+                                                          .astype(dist_sq.dtype)
                     
-                if normalizeGraph:
-                    isSymmetric = np.allclose(graphMatrixBatch,
-                                              np.transpose(graphMatrixBatch,
+                if normalize_graph:
+                    is_symmetric = np.allclose(graph_matrix_batch,
+                                              np.transpose(graph_matrix_batch,
                                                             axes = [0,1,3,2]))
                     # Tries to make the computation faster
-                    if isSymmetric:
-                        W = np.linalg.eigvalsh(graphMatrixBatch)
+                    if is_symmetric:
+                        W = np.linalg.eigvalsh(graph_matrix_batch)
                     else:
-                        W = np.linalg.eigvals(graphMatrixBatch)
-                    maxEigenvalue = np.max(np.real(W), axis = 2)
-                    #   batchSize[b] x tSamples
+                        W = np.linalg.eigvals(graph_matrix_batch)
+                    max_eigenvalue = np.max(np.real(W), axis = 2)
+                    #   batch_size[b] x t_samples
                     # Reshape to be able to divide by the graph matrix
-                    maxEigenvalue = maxEigenvalue.reshape((batchSize[b],
-                                                           tSamples,
+                    max_eigenvalue = max_eigenvalue.reshape((batch_size[b],
+                                                           t_samples,
                                                            1, 1))
                     # Normalize
-                    graphMatrixBatch = graphMatrixBatch / maxEigenvalue
+                    graph_matrix_batch = graph_matrix_batch / max_eigenvalue
                     
                 # Store
-                graphMatrix[batchIndex[b]:batchIndex[b+1]] = graphMatrixBatch
+                graph_matrix[batch_index[b]:batch_index[b+1]] = graph_matrix_batch
                 
-                if doPrint:
+                if do_print:
                     # Sample percentage count
-                    percentageCount = int(100*(b+1)/nBatches)
+                    percentage_count = int(100*(b+1)/n_batches)
                     
                     if b == 0:
                         # It's the first one, so just print it
-                        print("%3d%%" % percentageCount,
+                        print("%3d%%" % percentage_count,
                               end = '', flush = True)
                     else:
                         # Erase the previous characters
-                        print('\b \b' * 4 + "%3d%%" % percentageCount,
+                        print('\b \b' * 4 + "%3d%%" % percentage_count,
                               end = '', flush = True)
                     
         # Print
-        if doPrint:
+        if do_print:
             # Erase the percentage
             print('\b \b' * 4, end = '', flush = True)
             
-        return graphMatrix
+        return graph_matrix
     
-    def getData(self, name, samplesType, *args):
+    def get_data(self, name, samples_type, *args):
         
-        # samplesType: train, valid, test
+        # samples_type: train, valid, test
         # args: 0 args, give back all
         # args: 1 arg: if int, give that number of samples, chosen at random
         # args: 1 arg: if list, give those samples precisely.
         
         # Check that the type is one of the possible ones
-        assert samplesType == 'train' or samplesType == 'valid' \
-                    or samplesType == 'test'
+        assert samples_type == 'train' or samples_type == 'valid' \
+                    or samples_type == 'test'
         # Check that the number of extra arguments fits
         assert len(args) <= 1
                     
@@ -1136,99 +1136,99 @@ class Flocking(_data):
         assert name in dir(self)
         
         # Get the desired attribute
-        thisDataDict = getattr(self, name)
+        this_data_dict = getattr(self, name)
         
         # Check it's a dictionary and that it has the corresponding key
-        assert type(thisDataDict) is dict
-        assert samplesType in thisDataDict.keys()
+        assert type(this_data_dict) is dict
+        assert samples_type in this_data_dict.keys()
         
         # Get the data now
-        thisData = thisDataDict[samplesType]
+        this_data = this_data_dict[samples_type]
         # Get the dimension length
-        thisDataDims = len(thisData.shape)
+        this_data_dims = len(this_data.shape)
         
         # Check that it has at least two dimension, where the first one is
         # always the number of samples
-        assert thisDataDims > 1
+        assert this_data_dims > 1
         
         if len(args) == 1:
             # If it is an int, just return that number of randomly chosen
             # samples.
             if type(args[0]) == int:
-                nSamples = thisData.shape[0] # total number of samples
+                n_samples = this_data.shape[0] # total number of samples
                 # We can't return more samples than there are available
-                assert args[0] <= nSamples
+                assert args[0] <= n_samples
                 # Randomly choose args[0] indices
-                selectedIndices = np.random.choice(nSamples, size = args[0],
+                selected_indices = np.random.choice(n_samples, size = args[0],
                                                    replace = False)
                 # Select the corresponding samples
-                thisData = thisData[selectedIndices]
+                this_data = this_data[selected_indices]
             else:
                 # The fact that we put else here instead of elif type()==list
                 # allows for np.array to be used as indices as well. In general,
                 # any variable with the ability to index.
-                thisData = thisData[args[0]]
+                this_data = this_data[args[0]]
                 
             # If we only selected a single element, then the nDataPoints dim
             # has been left out. So if we have less dimensions, we have to
             # put it back
-            if len(thisData.shape) < thisDataDims:
-                if 'torch' in repr(thisData.dtype):
-                    thisData =thisData.unsqueeze(0)
+            if len(this_data.shape) < this_data_dims:
+                if 'torch' in repr(this_data.dtype):
+                    this_data =this_data.unsqueeze(0)
                 else:
-                    thisData = np.expand_dims(thisData, axis = 0)
+                    this_data = np.expand_dims(this_data, axis = 0)
 
-        return thisData
+        return this_data
         
-    def evaluate(self, vel = None, accel = None, initVel = None,
-                 samplingTime = None):
+    def evaluate(self, vel = None, accel = None, init_vel = None,
+                 sampling_time = None):
         
         # It is optional to add a different sampling time, if not, it uses
         # the internal one
-        if samplingTime is None:
+        if sampling_time is None:
             # If there's no argument use the internal sampling time
-            samplingTime = self.samplingTime
+            sampling_time = self.sampling_time
         
-        # Check whether we have vel, or accel and initVel (i.e. we are either
+        # Check whether we have vel, or accel and init_vel (i.e. we are either
         # given the velocities, or we are given the elements to compute them)
         if vel is not None:
             assert len(vel.shape) == 4
-            nSamples = vel.shape[0]
-            tSamples = vel.shape[1]
+            n_samples = vel.shape[0]
+            t_samples = vel.shape[1]
             assert vel.shape[2] == 2
-            nAgents = vel.shape[3]
-        elif accel is not None and initVel is not None:
-            assert len(accel.shape) == 4 and len(initVel.shape) == 3
-            nSamples = accel.shape[0]
-            tSamples = accel.shape[1]
+            n_agents = vel.shape[3]
+        elif accel is not None and init_vel is not None:
+            assert len(accel.shape) == 4 and len(init_vel.shape) == 3
+            n_samples = accel.shape[0]
+            t_samples = accel.shape[1]
             assert accel.shape[2] == 2
-            nAgents = accel.shape[3]
-            assert initVel.shape[0] == nSamples
-            assert initVel.shape[1] == 2
-            assert initVel.shape[2] == nAgents
+            n_agents = accel.shape[3]
+            assert init_vel.shape[0] == n_samples
+            assert init_vel.shape[1] == 2
+            assert init_vel.shape[2] == n_agents
             
             # Now that we know we have a accel and init velocity, compute the
             # velocity trajectory
             # Compute the velocity trajectory
             if 'torch' in repr(accel.dtype):
-                # Check that initVel is also torch
-                assert 'torch' in repr(initVel.dtype)
+                # Check that init_vel is also torch
+                assert 'torch' in repr(init_vel.dtype)
                 # Create the tensor to save the velocity trajectory
-                vel = torch.zeros(nSamples,tSamples,2,nAgents,
+                vel = torch.zeros(n_samples,t_samples,2,n_agents,
                                   dtype = accel.dtype, device = accel.device)
                 # Add the initial velocity
-                vel[:,0,:,:] = initVel.clone().detach()
+                vel[:,0,:,:] = init_vel.clone().detach()
             else:
                 # Create the space
-                vel = np.zeros((nSamples, tSamples, 2, nAgents),
+                vel = np.zeros((n_samples, t_samples, 2, n_agents),
                                dtype=accel.dtype)
                 # Add the initial velocity
-                vel[:,0,:,:] = initVel.copy()
+                vel[:,0,:,:] = init_vel.copy()
                 
             # Go over time
-            for t in range(1,tSamples):
+            for t in range(1,t_samples):
                 # Compute velocity
-                vel[:,t,:,:] = accel[:,t-1,:,:] * samplingTime + vel[:,t-1,:,:]
+                vel[:,t,:,:] = accel[:,t-1,:,:] * sampling_time + vel[:,t-1,:,:]
             
         # Check that I did enter one of the if clauses
         assert vel is not None
@@ -1236,219 +1236,219 @@ class Flocking(_data):
         # And now that we have the velocities, we can compute the cost
         if 'torch' in repr(vel.dtype):
             # Average velocity for time t, averaged across agents
-            avgVel = torch.mean(vel, dim = 3) # nSamples x tSamples x 2
+            avg_vel = torch.mean(vel, dim = 3) # n_samples x t_samples x 2
             # Compute the difference in velocity between each agent and the
             # mean velocity
-            diffVel = vel - avgVel.unsqueeze(3) 
-            #   nSamples x tSamples x 2 x nAgents
+            diff_vel = vel - avg_vel.unsqueeze(3) 
+            #   n_samples x t_samples x 2 x n_agents
             # Compute the MSE velocity
-            diffVelNorm = torch.sum(diffVel ** 2, dim = 2) 
-            #   nSamples x tSamples x nAgents
+            diff_vel_norm = torch.sum(diff_vel ** 2, dim = 2) 
+            #   n_samples x t_samples x n_agents
             # Average over agents
-            diffVelAvg = torch.mean(diffVelNorm, dim = 2) # nSamples x tSamples
+            diff_vel_avg = torch.mean(diff_vel_norm, dim = 2) # n_samples x t_samples
             # Sum over time
-            costPerSample = torch.sum(diffVelAvg, dim = 1) # nSamples
+            cost_per_sample = torch.sum(diff_vel_avg, dim = 1) # n_samples
             # Final average cost
-            cost = torch.mean(costPerSample)
+            cost = torch.mean(cost_per_sample)
         else:
             # Repeat for numpy
-            avgVel = np.mean(vel, axis = 3) # nSamples x tSamples x 2
-            diffVel = vel - np.tile(np.expand_dims(avgVel, 3),
-                                    (1, 1, 1, nAgents))
-            #   nSamples x tSamples x 2 x nAgents
-            diffVelNorm = np.sum(diffVel ** 2, axis = 2)
-            #   nSamples x tSamples x nAgents
-            diffVelAvg = np.mean(diffVelNorm, axis = 2) # nSamples x tSamples
-            costPerSample = np.sum(diffVelAvg, axis = 1) # nSamples
-            cost = np.mean(costPerSample) # scalar
+            avg_vel = np.mean(vel, axis = 3) # n_samples x t_samples x 2
+            diff_vel = vel - np.tile(np.expand_dims(avg_vel, 3),
+                                    (1, 1, 1, n_agents))
+            #   n_samples x t_samples x 2 x n_agents
+            diff_vel_norm = np.sum(diff_vel ** 2, axis = 2)
+            #   n_samples x t_samples x n_agents
+            diff_vel_avg = np.mean(diff_vel_norm, axis = 2) # n_samples x t_samples
+            cost_per_sample = np.sum(diff_vel_avg, axis = 1) # n_samples
+            cost = np.mean(cost_per_sample) # scalar
         
         return cost
     
-    def computeTrajectory(self, initPos, initVel, duration, **kwargs):
+    def compute_trajectory(self, init_pos, init_vel, duration, **kwargs):
         
-        # Check initPos is of shape batchSize x 2 x nAgents
-        assert len(initPos.shape) == 3
-        batchSize = initPos.shape[0]
-        assert initPos.shape[1]
-        nAgents = initPos.shape[2]
+        # Check init_pos is of shape batch_size x 2 x n_agents
+        assert len(init_pos.shape) == 3
+        batch_size = init_pos.shape[0]
+        assert init_pos.shape[1]
+        n_agents = init_pos.shape[2]
         
-        # Check initVel is of shape batchSize x 2 x nAgents
-        assert len(initVel.shape) == 3
-        assert initVel.shape[0] == batchSize
-        assert initVel.shape[1] == 2
-        assert initVel.shape[2] == nAgents
+        # Check init_vel is of shape batch_size x 2 x n_agents
+        assert len(init_vel.shape) == 3
+        assert init_vel.shape[0] == batch_size
+        assert init_vel.shape[1] == 2
+        assert init_vel.shape[2] == n_agents
         
         # Check what kind of data it is
         #   This is because all the functions are numpy, but if this was
         #   torch, we need to return torch, to make it consistent
-        if 'torch' in repr(initPos.dtype):
-            assert 'torch' in repr(initVel.dtype)
-            useTorch = True
-            device = initPos.device
-            assert initVel.device == device
+        if 'torch' in repr(init_pos.dtype):
+            assert 'torch' in repr(init_vel.dtype)
+            use_torch = True
+            device = init_pos.device
+            assert init_vel.device == device
         else:
-            useTorch = False
+            use_torch = False
         
         # Create time line
-        time = np.arange(0, duration, self.samplingTime)
-        tSamples = len(time)
+        time = np.arange(0, duration, self.sampling_time)
+        t_samples = len(time)
         
         # Here, we have two options, or we're given the acceleration or the
         # architecture
         assert 'archit' in kwargs.keys() or 'accel' in kwargs.keys()
         # Flags to determine which method to use
-        useArchit = False
-        useAccel = False
+        use_archit = False
+        use_accel = False
         
         if 'archit' in kwargs.keys():
             archit = kwargs['archit'] # This is a torch.nn.Module architecture
-            architDevice = list(archit.parameters())[0].device
-            useArchit = True
+            archit_device = list(archit.parameters())[0].device
+            use_archit = True
         elif 'accel' in kwargs.keys():
             accel = kwargs['accel']
-            # accel has to be of shape batchSize x tSamples x 2 x nAgents
+            # accel has to be of shape batch_size x t_samples x 2 x n_agents
             assert len(accel.shape) == 4
-            assert accel.shape[0] == batchSize
-            assert accel.shape[1] == tSamples
+            assert accel.shape[0] == batch_size
+            assert accel.shape[1] == t_samples
             assert accel.shape[2] == 2
-            assert accel.shape[3] == nAgents
-            if useTorch:
+            assert accel.shape[3] == n_agents
+            if use_torch:
                 assert 'torch' in repr(accel.dtype)
-            useAccel = True
+            use_accel = True
             
         # Decide on printing or not:
-        if 'doPrint' in kwargs.keys():
-            doPrint = kwargs['doPrint']
+        if 'do_print' in kwargs.keys():
+            do_print = kwargs['do_print']
         else:
-            doPrint = self.doPrint # Use default
+            do_print = self.do_print # Use default
         
         # Now create the outputs that will be filled afterwards
-        pos = np.zeros((batchSize, tSamples, 2, nAgents), dtype = np.float)
-        vel = np.zeros((batchSize, tSamples, 2, nAgents), dtype = np.float)
-        if useArchit:
-            accel = np.zeros((batchSize, tSamples, 2, nAgents), dtype=np.float)
-            state = np.zeros((batchSize, tSamples, 6, nAgents), dtype=np.float)
-            graph = np.zeros((batchSize, tSamples, nAgents, nAgents),
+        pos = np.zeros((batch_size, t_samples, 2, n_agents), dtype = np.float)
+        vel = np.zeros((batch_size, t_samples, 2, n_agents), dtype = np.float)
+        if use_archit:
+            accel = np.zeros((batch_size, t_samples, 2, n_agents), dtype=np.float)
+            state = np.zeros((batch_size, t_samples, 6, n_agents), dtype=np.float)
+            graph = np.zeros((batch_size, t_samples, n_agents, n_agents),
                              dtype = np.float)
             
         # Assign the initial positions and velocities
-        if useTorch:
-            pos[:,0,:,:] = initPos.cpu().numpy()
-            vel[:,0,:,:] = initVel.cpu().numpy()
-            if useAccel:
+        if use_torch:
+            pos[:,0,:,:] = init_pos.cpu().numpy()
+            vel[:,0,:,:] = init_vel.cpu().numpy()
+            if use_accel:
                 accel = accel.cpu().numpy()
         else:
-            pos[:,0,:,:] = initPos.copy()
-            vel[:,0,:,:] = initVel.copy()
+            pos[:,0,:,:] = init_pos.copy()
+            vel[:,0,:,:] = init_vel.copy()
             
-        if doPrint:
+        if do_print:
             # Sample percentage count
-            percentageCount = int(100/tSamples)
+            percentage_count = int(100/t_samples)
             # Print new value
-            print("%3d%%" % percentageCount, end = '', flush = True)
+            print("%3d%%" % percentage_count, end = '', flush = True)
             
         # Now, let's get started:
-        for t in range(1, tSamples):
+        for t in range(1, t_samples):
             
             # If it is architecture-based, we need to compute the state, and
             # for that, we need to compute the graph
-            if useArchit:
+            if use_archit:
                 # Adjust pos value for graph computation
-                thisPos = np.expand_dims(pos[:,t-1,:,:], 1)
+                this_pos = np.expand_dims(pos[:,t-1,:,:], 1)
                 # Compute graph
-                thisGraph = self.computeCommunicationGraph(thisPos,
-                                                           self.commRadius,
+                this_graph = self.compute_communication_graph(this_pos,
+                                                           self.comm_radius,
                                                            True,
                                                            doPrint = False)
                 # Save graph
-                graph[:,t-1,:,:] = thisGraph.squeeze(1)
+                graph[:,t-1,:,:] = this_graph.squeeze(1)
                 # Adjust vel value for state computation
-                thisVel = np.expand_dims(vel[:,t-1,:,:], 1)
+                this_vel = np.expand_dims(vel[:,t-1,:,:], 1)
                 # Compute state
-                thisState = self.computeStates(thisPos, thisVel, thisGraph,
+                this_state = self.compute_states(this_pos, this_vel, this_graph,
                                                doPrint = False)
                 # Save state
-                state[:,t-1,:,:] = thisState.squeeze(1)
+                state[:,t-1,:,:] = this_state.squeeze(1)
                 
                 # Compute the output of the architecture
                 #   Note that we need the collection of all time instants up
                 #   to now, because when we do the communication exchanges,
                 #   it involves past times.
-                x = torch.tensor(state[:,0:t,:,:], device = architDevice)
-                S = torch.tensor(graph[:,0:t,:,:], device = architDevice)
+                x = torch.tensor(state[:,0:t,:,:], device = archit_device)
+                S = torch.tensor(graph[:,0:t,:,:], device = archit_device)
                 with torch.no_grad():
-                    thisAccel = archit(x, S)
+                    this_accel = archit(x, S)
                 # Now that we have computed the acceleration, we only care 
                 # about the last element in time
-                thisAccel = thisAccel.cpu().numpy()[:,-1,:,:]
-                thisAccel[thisAccel > self.accelMax] = self.accelMax
-                thisAccel[thisAccel < -self.accelMax] = self.accelMax
+                this_accel = this_accel.cpu().numpy()[:,-1,:,:]
+                this_accel[this_accel > self.accel_max] = self.accel_max
+                this_accel[this_accel < -self.accel_max] = self.accel_max
                 # And save it
-                accel[:,t-1,:,:] = thisAccel
+                accel[:,t-1,:,:] = this_accel
                 
             # Now that we have the acceleration, we can update position and
             # velocity
-            vel[:,t,:,:] = accel[:,t-1,:,:] * self.samplingTime +vel[:,t-1,:,:]
-            pos[:,t,:,:] = accel[:,t-1,:,:] * (self.samplingTime ** 2)/2 + \
-                            vel[:,t-1,:,:] * self.samplingTime + pos[:,t-1,:,:]
+            vel[:,t,:,:] = accel[:,t-1,:,:] * self.sampling_time +vel[:,t-1,:,:]
+            pos[:,t,:,:] = accel[:,t-1,:,:] * (self.sampling_time ** 2)/2 + \
+                            vel[:,t-1,:,:] * self.sampling_time + pos[:,t-1,:,:]
             
-            if doPrint:
+            if do_print:
                 # Sample percentage count
-                percentageCount = int(100*(t+1)/tSamples)
+                percentage_count = int(100*(t+1)/t_samples)
                 # Erase previous value and print new value
-                print('\b \b' * 4 + "%3d%%" % percentageCount,
+                print('\b \b' * 4 + "%3d%%" % percentage_count,
                       end = '', flush = True)
                 
         # And we're missing the last values of graph, state and accel, so
         # let's compute them for completeness
         #   Graph
-        thisPos = np.expand_dims(pos[:,-1,:,:], 1)
-        thisGraph = self.computeCommunicationGraph(thisPos, self.commRadius,
+        this_pos = np.expand_dims(pos[:,-1,:,:], 1)
+        this_graph = self.compute_communication_graph(this_pos, self.comm_radius,
                                                    True, doPrint = False)
-        graph[:,-1,:,:] = thisGraph.squeeze(1)
+        graph[:,-1,:,:] = this_graph.squeeze(1)
         #   State
-        thisVel = np.expand_dims(vel[:,-1,:,:], 1)
-        thisState = self.computeStates(thisPos, thisVel, thisGraph,
+        this_vel = np.expand_dims(vel[:,-1,:,:], 1)
+        this_state = self.compute_states(this_pos, this_vel, this_graph,
                                        doPrint = False)
-        state[:,-1,:,:] = thisState.squeeze(1)
+        state[:,-1,:,:] = this_state.squeeze(1)
         #   Accel
-        x = torch.tensor(state).to(architDevice)
-        S = torch.tensor(graph).to(architDevice)
+        x = torch.tensor(state).to(archit_device)
+        S = torch.tensor(graph).to(archit_device)
         with torch.no_grad():
-            thisAccel = archit(x, S)
-        thisAccel = thisAccel.cpu().numpy()[:,-1,:,:]
-        thisAccel[thisAccel > self.accelMax] = self.accelMax
-        thisAccel[thisAccel < -self.accelMax] = self.accelMax
+            this_accel = archit(x, S)
+        this_accel = this_accel.cpu().numpy()[:,-1,:,:]
+        this_accel[this_accel > self.accel_max] = self.accel_max
+        this_accel[this_accel < -self.accel_max] = self.accel_max
         # And save it
-        accel[:,-1,:,:] = thisAccel
+        accel[:,-1,:,:] = this_accel
                 
         # Print
-        if doPrint:
+        if do_print:
             # Erase the percentage
             print('\b \b' * 4, end = '', flush = True)
             
         # After we have finished, turn it back into tensor, if required
-        if useTorch:
+        if use_torch:
             pos = torch.tensor(pos).to(device)
             vel = torch.tensor(vel).to(device)
             accel = torch.tensor(accel).to(device)
             
         # And return it
-        if useArchit:
+        if use_archit:
             return pos, vel, accel, state, graph
-        elif useAccel:
+        elif use_accel:
             return pos, vel
     
-    def computeDifferences(self, u):
+    def compute_differences(self, u):
         
         # Takes as input a tensor of shape
-        #   nSamples x tSamples x 2 x nAgents
+        #   n_samples x t_samples x 2 x n_agents
         # or of shape
-        #   nSamples x 2 x nAgents
+        #   n_samples x 2 x n_agents
         # And returns the elementwise difference u_i - u_j of shape
-        #   nSamples (x tSamples) x 2 x nAgents x nAgents
+        #   n_samples (x t_samples) x 2 x n_agents x n_agents
         # And the distance squared ||u_i - u_j||^2 of shape
-        #   nSamples (x tSamples) x nAgents x nAgents
+        #   n_samples (x t_samples) x n_agents x n_agents
         
         # Check dimensions
         assert len(u.shape) == 3 or len(u.shape) == 4
@@ -1457,56 +1457,56 @@ class Flocking(_data):
         # time instants
         if len(u.shape) == 3:
             u = np.expand_dims(u, 1)
-            hasTimeDim = False
+            has_time_dim = False
         else:
-            hasTimeDim = True
+            has_time_dim = True
         
         # Now we have that pos always has shape
-        #   nSamples x tSamples x 2 x nAgents
-        nSamples = u.shape[0]
-        tSamples = u.shape[1]
+        #   n_samples x t_samples x 2 x n_agents
+        n_samples = u.shape[0]
+        t_samples = u.shape[1]
         assert u.shape[2] == 2
-        nAgents = u.shape[3]
+        n_agents = u.shape[3]
         
         # Compute the difference along each axis. For this, we subtract a
         # column vector from a row vector. The difference tensor on each
-        # position will have shape nSamples x tSamples x nAgents x nAgents
+        # position will have shape n_samples x t_samples x n_agents x n_agents
         # and then we add the extra dimension to concatenate and obtain a final
-        # tensor of shape nSamples x tSamples x 2 x nAgents x nAgents
+        # tensor of shape n_samples x t_samples x 2 x n_agents x n_agents
         # First, axis x
         #   Reshape as column and row vector, respectively
-        uCol_x = u[:,:,0,:].reshape((nSamples, tSamples, nAgents, 1))
-        uRow_x = u[:,:,0,:].reshape((nSamples, tSamples, 1, nAgents))
+        u_col_x = u[:,:,0,:].reshape((n_samples, t_samples, n_agents, 1))
+        u_row_x = u[:,:,0,:].reshape((n_samples, t_samples, 1, n_agents))
         #   Subtract them
-        uDiff_x = uCol_x - uRow_x # nSamples x tSamples x nAgents x nAgents
+        u_diff_x = u_col_x - u_row_x # n_samples x t_samples x n_agents x n_agents
         # Second, for axis y
-        uCol_y = u[:,:,1,:].reshape((nSamples, tSamples, nAgents, 1))
-        uRow_y = u[:,:,1,:].reshape((nSamples, tSamples, 1, nAgents))
-        uDiff_y = uCol_y - uRow_y # nSamples x tSamples x nAgents x nAgents
+        u_col_y = u[:,:,1,:].reshape((n_samples, t_samples, n_agents, 1))
+        u_row_y = u[:,:,1,:].reshape((n_samples, t_samples, 1, n_agents))
+        u_diff_y = u_col_y - u_row_y # n_samples x t_samples x n_agents x n_agents
         # Third, compute the distance tensor of shape
-        #   nSamples x tSamples x nAgents x nAgents
-        uDistSq = uDiff_x ** 2 + uDiff_y ** 2
+        #   n_samples x t_samples x n_agents x n_agents
+        u_dist_sq = u_diff_x ** 2 + u_diff_y ** 2
         # Finally, concatenate to obtain the tensor of differences
         #   Add the extra dimension in the position
-        uDiff_x = np.expand_dims(uDiff_x, 2)
-        uDiff_y = np.expand_dims(uDiff_y, 2)
+        u_diff_x = np.expand_dims(u_diff_x, 2)
+        u_diff_y = np.expand_dims(u_diff_y, 2)
         #   And concatenate them
-        uDiff = np.concatenate((uDiff_x, uDiff_y), 2)
-        #   nSamples x tSamples x 2 x nAgents x nAgents
+        u_diff = np.concatenate((u_diff_x, u_diff_y), 2)
+        #   n_samples x t_samples x 2 x n_agents x n_agents
             
         # Get rid of the time dimension if we don't need it
-        if not hasTimeDim:
-            # (This fails if tSamples > 1)
-            uDistSq = uDistSq.squeeze(1)
-            #   nSamples x nAgents x nAgents
-            uDiff = uDiff.squeeze(1)
-            #   nSamples x 2 x nAgents x nAgents
+        if not has_time_dim:
+            # (This fails if t_samples > 1)
+            u_dist_sq = u_dist_sq.squeeze(1)
+            #   n_samples x n_agents x n_agents
+            u_diff = u_diff.squeeze(1)
+            #   n_samples x 2 x n_agents x n_agents
             
-        return uDiff, uDistSq
+        return u_diff, u_dist_sq
         
-    def computeOptimalTrajectory(self, initPos, initVel, duration, 
-                                 samplingTime, repelDist,
-                                 accelMax = 100.):
+    def compute_optimal_trajectory(self, init_pos, init_vel, duration, 
+                                 sampling_time, repel_dist,
+                                 accel_max = 100.):
         
         # The optimal trajectory is given by
         # u_{i} = - \sum_{j=1}^{N} (v_{i} - v_{j})
@@ -1516,59 +1516,59 @@ class Flocking(_data):
         # for each agent i=1,...,N, where v_{i} is the velocity and r_{i} the
         # position.
         
-        # Check that initPos and initVel as nSamples x 2 x nAgents arrays
-        assert len(initPos.shape) == len(initVel.shape) == 3
-        nSamples = initPos.shape[0]
-        assert initPos.shape[1] == initVel.shape[1] == 2
-        nAgents = initPos.shape[2]
-        assert initVel.shape[0] == nSamples
-        assert initVel.shape[2] == nAgents
+        # Check that init_pos and init_vel as n_samples x 2 x n_agents arrays
+        assert len(init_pos.shape) == len(init_vel.shape) == 3
+        n_samples = init_pos.shape[0]
+        assert init_pos.shape[1] == init_vel.shape[1] == 2
+        n_agents = init_pos.shape[2]
+        assert init_vel.shape[0] == n_samples
+        assert init_vel.shape[2] == n_agents
         
         # time
-        time = np.arange(0, duration, samplingTime)
-        tSamples = len(time) # number of time samples
+        time = np.arange(0, duration, sampling_time)
+        t_samples = len(time) # number of time samples
         
         # Create arrays to store the trajectory
-        pos = np.zeros((nSamples, tSamples, 2, nAgents))
-        vel = np.zeros((nSamples, tSamples, 2, nAgents))
-        accel = np.zeros((nSamples, tSamples, 2, nAgents))
+        pos = np.zeros((n_samples, t_samples, 2, n_agents))
+        vel = np.zeros((n_samples, t_samples, 2, n_agents))
+        accel = np.zeros((n_samples, t_samples, 2, n_agents))
         
         # Initial settings
-        pos[:,0,:,:] = initPos
-        vel[:,0,:,:] = initVel
+        pos[:,0,:,:] = init_pos
+        vel[:,0,:,:] = init_vel
         
-        if self.doPrint:
+        if self.do_print:
             # Sample percentage count
-            percentageCount = int(100/tSamples)
+            percentage_count = int(100/t_samples)
             # Print new value
-            print("%3d%%" % percentageCount, end = '', flush = True)
+            print("%3d%%" % percentage_count, end = '', flush = True)
         
         # For each time instant
-        for t in range(1,tSamples):
+        for t in range(1,t_samples):
             
             # Compute the optimal acceleration
             #   Compute the distance between all elements (positions)
-            ijDiffPos, ijDistSq = self.computeDifferences(pos[:,t-1,:,:])
-            #       ijDiffPos: nSamples x 2 x nAgents x nAgents
-            #       ijDistSq:  nSamples x nAgents x nAgents
+            ij_diff_pos, ij_dist_sq = self.compute_differences(pos[:,t-1,:,:])
+            #       ij_diff_pos: n_samples x 2 x n_agents x n_agents
+            #       ij_dist_sq:  n_samples x n_agents x n_agents
             #   And also the difference in velocities
-            ijDiffVel, _ = self.computeDifferences(vel[:,t-1,:,:])
-            #       ijDiffVel: nSamples x 2 x nAgents x nAgents
+            ij_diff_vel, _ = self.compute_differences(vel[:,t-1,:,:])
+            #       ij_diff_vel: n_samples x 2 x n_agents x n_agents
             #   The last element we need to compute the acceleration is the
             #   gradient. Note that the gradient only counts when the distance 
             #   is smaller than the repel distance
             #       This is the mask to consider each of the differences
-            repelMask = (ijDistSq < (repelDist**2)).astype(ijDiffPos.dtype)
+            repel_mask = (ij_dist_sq < (repel_dist**2)).astype(ij_diff_pos.dtype)
             #       Apply the mask to the relevant differences
-            ijDiffPos = ijDiffPos * np.expand_dims(repelMask, 1)
+            ij_diff_pos = ij_diff_pos * np.expand_dims(repel_mask, 1)
             #       Compute the constant (1/||r_ij||^4 + 1/||r_ij||^2)
-            ijDistSqInv = invertTensorEW(ijDistSq)
+            ij_dist_sq_inv = invert_tensor_ew(ij_dist_sq)
             #       Add the extra dimension
-            ijDistSqInv = np.expand_dims(ijDistSqInv, 1)
+            ij_dist_sq_inv = np.expand_dims(ij_dist_sq_inv, 1)
             #   Compute the acceleration
             accel[:,t-1,:,:] = \
-                    -np.sum(ijDiffVel, axis = 3) \
-                    +2* np.sum(ijDiffPos * (ijDistSqInv ** 2 + ijDistSqInv),
+                    -np.sum(ij_diff_vel, axis = 3) \
+                    +2* np.sum(ij_diff_pos * (ij_dist_sq_inv ** 2 + ij_dist_sq_inv),
                                axis = 3)
                     
             # Finally, note that if the agents are too close together, the
@@ -1577,47 +1577,47 @@ class Flocking(_data):
             # So let's add a limitation to the maximum aceleration
 
             # Find the places where the acceleration is big
-            thisAccel = accel[:,t-1,:,:].copy()
-            # Values that exceed accelMax, force them to be accelMax
-            thisAccel[accel[:,t-1,:,:] > accelMax] = accelMax
-            # Values that are smaller than -accelMax, force them to be accelMax
-            thisAccel[accel[:,t-1,:,:] < -accelMax] = -accelMax
+            this_accel = accel[:,t-1,:,:].copy()
+            # Values that exceed accel_max, force them to be accel_max
+            this_accel[accel[:,t-1,:,:] > accel_max] = accel_max
+            # Values that are smaller than -accel_max, force them to be accel_max
+            this_accel[accel[:,t-1,:,:] < -accel_max] = -accel_max
             # And put it back
-            accel[:,t-1,:,:] = thisAccel
+            accel[:,t-1,:,:] = this_accel
             
             # Update the values
             #   Update velocity
-            vel[:,t,:,:] = accel[:,t-1,:,:] * samplingTime + vel[:,t-1,:,:]
+            vel[:,t,:,:] = accel[:,t-1,:,:] * sampling_time + vel[:,t-1,:,:]
             #   Update the position
-            pos[:,t,:,:] = accel[:,t-1,:,:] * (samplingTime ** 2)/2 + \
-                                 vel[:,t-1,:,:] * samplingTime + pos[:,t-1,:,:]
+            pos[:,t,:,:] = accel[:,t-1,:,:] * (sampling_time ** 2)/2 + \
+                                 vel[:,t-1,:,:] * sampling_time + pos[:,t-1,:,:]
             
-            if self.doPrint:
+            if self.do_print:
                 # Sample percentage count
-                percentageCount = int(100*(t+1)/tSamples)
+                percentage_count = int(100*(t+1)/t_samples)
                 # Erase previous pecentage and print new value
-                print('\b \b' * 4 + "%3d%%" % percentageCount,
+                print('\b \b' * 4 + "%3d%%" % percentage_count,
                       end = '', flush = True)
                 
         # Print
-        if self.doPrint:
+        if self.do_print:
             # Erase the percentage
             print('\b \b' * 4, end = '', flush = True)
             
         return pos, vel, accel
         
-    def computeInitialPositions(self, nAgents, nSamples, commRadius,
-                                minDist = 0.1, geometry = 'rectangular',
+    def compute_initial_positions(self, n_agents, n_samples, comm_radius,
+                                min_dist = 0.1, geometry = 'rectangular',
                                 **kwargs):
         
         # It will always be uniform. We can select whether it is rectangular
         # or circular (or some other shape) and the parameters respecting
         # that
         assert geometry == 'rectangular' or geometry == 'circular'
-        assert minDist * (1.+zeroTolerance) <= commRadius * (1.-zeroTolerance)
-        # We use a zeroTolerance buffer zone, just in case
-        minDist = minDist * (1. + zeroTolerance)
-        commRadius = commRadius * (1. - zeroTolerance)
+        assert min_dist * (1.+zero_tolerance) <= comm_radius * (1.-zero_tolerance)
+        # We use a zero_tolerance buffer zone, just in case
+        min_dist = min_dist * (1. + zero_tolerance)
+        comm_radius = comm_radius * (1. - zero_tolerance)
         
         # If there are other keys in the kwargs argument, they will just be
         # ignored
@@ -1628,235 +1628,235 @@ class Flocking(_data):
         # Let's start by setting the fixed position
         if geometry == 'rectangular':
             
-            # This grid has a distance that depends on the desired minDist and
-            # the commRadius
-            distFixed = (commRadius + minDist)/(2.*np.sqrt(2))
+            # This grid has a distance that depends on the desired min_dist and
+            # the comm_radius
+            dist_fixed = (comm_radius + min_dist)/(2.*np.sqrt(2))
             #   This is the fixed distance between points in the grid
-            distPerturb = (commRadius - minDist)/(4.*np.sqrt(2))
+            dist_perturb = (comm_radius - min_dist)/(4.*np.sqrt(2))
             #   This is the standard deviation of a uniform perturbation around
             #   the fixed point.
             # This should guarantee that, even after the perturbations, there
-            # are no agents below minDist, and that all agents have at least
-            # one other agent within commRadius.
+            # are no agents below min_dist, and that all agents have at least
+            # one other agent within comm_radius.
             
             # How many agents per axis
-            nAgentsPerAxis = int(np.ceil(np.sqrt(nAgents)))
+            n_agents_per_axis = int(np.ceil(np.sqrt(n_agents)))
             
-            axisFixedPos = np.arange(-(nAgentsPerAxis * distFixed)/2,
-                                       (nAgentsPerAxis * distFixed)/2,
-                                      step = distFixed)
+            axis_fixed_pos = np.arange(-(n_agents_per_axis * dist_fixed)/2,
+                                       (n_agents_per_axis * dist_fixed)/2,
+                                      step = dist_fixed)
             
             # Repeat the positions in the same order (x coordinate)
-            xFixedPos = np.tile(axisFixedPos, nAgentsPerAxis)
+            x_fixed_pos = np.tile(axis_fixed_pos, n_agents_per_axis)
             # Repeat each element (y coordinate)
-            yFixedPos = np.repeat(axisFixedPos, nAgentsPerAxis)
+            y_fixed_pos = np.repeat(axis_fixed_pos, n_agents_per_axis)
             
             # Concatenate this to obtain the positions
-            fixedPos = np.concatenate((np.expand_dims(xFixedPos, 0),
-                                       np.expand_dims(yFixedPos, 0)),
+            fixed_pos = np.concatenate((np.expand_dims(x_fixed_pos, 0),
+                                       np.expand_dims(y_fixed_pos, 0)),
                                       axis = 0)
             
             # Get rid of unnecessary agents
-            fixedPos = fixedPos[:, 0:nAgents]
+            fixed_pos = fixed_pos[:, 0:n_agents]
             # And repeat for the number of samples we want to generate
-            fixedPos = np.repeat(np.expand_dims(fixedPos, 0), nSamples,
+            fixed_pos = np.repeat(np.expand_dims(fixed_pos, 0), n_samples,
                                  axis = 0)
-            #   nSamples x 2 x nAgents
+            #   n_samples x 2 x n_agents
             
             # Now generate the noise
-            perturbPos = np.random.uniform(low = -distPerturb,
-                                           high = distPerturb,
-                                           size = (nSamples, 2, nAgents))
+            perturb_pos = np.random.uniform(low = -dist_perturb,
+                                           high = dist_perturb,
+                                           size = (n_samples, 2, n_agents))
             
             # Initial positions
-            initPos = fixedPos + perturbPos
+            init_pos = fixed_pos + perturb_pos
                 
         elif geometry == 'circular':
             
             # Radius for the grid
-            rFixed = (commRadius + minDist)/2.
-            rPerturb = (commRadius - minDist)/4.
-            fixedRadius = np.arange(0, rFixed * nAgents, step = rFixed)+rFixed
+            r_fixed = (comm_radius + min_dist)/2.
+            r_perturb = (comm_radius - min_dist)/4.
+            fixed_radius = np.arange(0, r_fixed * n_agents, step = r_fixed)+r_fixed
             
             # Angles for the grid
-            aFixed = (commRadius/fixedRadius + minDist/fixedRadius)/2.
-            for a in range(len(aFixed)):
-                # How many times does aFixed[a] fits within 2pi?
-                nAgentsPerCircle = 2 * np.pi // aFixed[a]
+            a_fixed = (comm_radius/fixed_radius + min_dist/fixed_radius)/2.
+            for a in range(len(a_fixed)):
+                # How many times does a_fixed[a] fits within 2pi?
+                n_agents_per_circle = 2 * np.pi // a_fixed[a]
                 # And now divide 2*np.pi by this number
-                aFixed[a] = 2 * np.pi / nAgentsPerCircle
-            #   Fixed angle difference for each value of fixedRadius
+                a_fixed[a] = 2 * np.pi / n_agents_per_circle
+            #   Fixed angle difference for each value of fixed_radius
             
             # Now, let's get the radius, angle coordinates for each agents
-            initRadius = np.empty((0))
-            initAngles = np.empty((0))
-            agentsSoFar = 0 # Number of agents located so far
+            init_radius = np.empty((0))
+            init_angles = np.empty((0))
+            agents_so_far = 0 # Number of agents located so far
             n = 0 # Index for radius
-            while agentsSoFar < nAgents:
-                thisRadius = fixedRadius[n]
-                thisAngles = np.arange(0, 2*np.pi, step = aFixed[n])
-                agentsSoFar += len(thisAngles)
-                initRadius = np.concatenate((initRadius,
-                                             np.repeat(thisRadius,
-                                                       len(thisAngles))))
-                initAngles = np.concatenate((initAngles, thisAngles))
+            while agents_so_far < n_agents:
+                this_radius = fixed_radius[n]
+                this_angles = np.arange(0, 2*np.pi, step = a_fixed[n])
+                agents_so_far += len(this_angles)
+                init_radius = np.concatenate((init_radius,
+                                             np.repeat(this_radius,
+                                                       len(this_angles))))
+                init_angles = np.concatenate((init_angles, this_angles))
                 n += 1
-                assert len(initRadius) == agentsSoFar
+                assert len(init_radius) == agents_so_far
                 
             # Restrict to the number of agents we need
-            initRadius = initRadius[0:nAgents]
-            initAngles = initAngles[0:nAgents]
+            init_radius = init_radius[0:n_agents]
+            init_angles = init_angles[0:n_agents]
             
             # Add the number of samples
-            initRadius = np.repeat(np.expand_dims(initRadius, 0), nSamples,
+            init_radius = np.repeat(np.expand_dims(init_radius, 0), n_samples,
                                    axis = 0)
-            initAngles = np.repeat(np.expand_dims(initAngles, 0), nSamples,
+            init_angles = np.repeat(np.expand_dims(init_angles, 0), n_samples,
                                    axis = 0)
             
             # Add the noise
             #   First, to the angles
-            for n in range(nAgents):
+            for n in range(n_agents):
                 # Get the radius (the angle noise depends on the radius); so
                 # far the radius is the same for all samples
-                thisRadius = initRadius[0,n]
-                aPerturb = (commRadius/thisRadius - minDist/thisRadius)/4.
+                this_radius = init_radius[0,n]
+                a_perturb = (comm_radius/this_radius - min_dist/this_radius)/4.
                 # Add the noise to the angles
-                initAngles[:,n] += np.random.uniform(low = -aPerturb,
-                                                     high = aPerturb,
-                                                     size = (nSamples))
+                init_angles[:,n] += np.random.uniform(low = -a_perturb,
+                                                     high = a_perturb,
+                                                     size = (n_samples))
             #   Then, to the radius
-            initRadius += np.random.uniform(low = -rPerturb,
-                                            high = rPerturb,
-                                            size = (nSamples, nAgents))
+            init_radius += np.random.uniform(low = -r_perturb,
+                                            high = r_perturb,
+                                            size = (n_samples, n_agents))
             
             # And finally, get the positions in the cartesian coordinates
-            initPos = np.zeros((nSamples, 2, nAgents))
-            initPos[:, 0, :] = initRadius * np.cos(initAngles)
-            initPos[:, 1, :] = initRadius * np.sin(initAngles)
+            init_pos = np.zeros((n_samples, 2, n_agents))
+            init_pos[:, 0, :] = init_radius * np.cos(init_angles)
+            init_pos[:, 1, :] = init_radius * np.sin(init_angles)
             
         # Now, check that the conditions are met:
         #   Compute square distances
-        _, distSq = self.computeDifferences(np.expand_dims(initPos, 1))
+        _, dist_sq = self.compute_differences(np.expand_dims(init_pos, 1))
         #   Get rid of the "time" dimension that arises from using the 
         #   method to compute distances
-        distSq = distSq.squeeze(1)
+        dist_sq = dist_sq.squeeze(1)
         #   Compute the minimum distance (don't forget to add something in
         #   the diagonal, which otherwise is zero)
-        minDistSq = np.min(distSq + \
-                           2 * commRadius\
-                             *np.eye(distSq.shape[1]).reshape(1,
-                                                              distSq.shape[1],
-                                                              distSq.shape[2])
+        min_dist_sq = np.min(dist_sq + \
+                           2 * comm_radius\
+                             *np.eye(dist_sq.shape[1]).reshape(1,
+                                                              dist_sq.shape[1],
+                                                              dist_sq.shape[2])
                            )
         
-        assert minDistSq >= minDist ** 2
+        assert min_dist_sq >= min_dist ** 2
         
         #   Now the number of neighbors
-        graphMatrix = self.computeCommunicationGraph(np.expand_dims(initPos,1),
-                                                     self.commRadius,
+        graph_matrix = self.compute_communication_graph(np.expand_dims(init_pos,1),
+                                                     self.comm_radius,
                                                      False,
                                                      doPrint = False)
-        graphMatrix = graphMatrix.squeeze(1) # nSamples x nAgents x nAgents  
+        graph_matrix = graph_matrix.squeeze(1) # n_samples x n_agents x n_agents  
         
         #   Binarize the matrix
-        graphMatrix = (np.abs(graphMatrix) > zeroTolerance)\
-                                                         .astype(initPos.dtype)
+        graph_matrix = (np.abs(graph_matrix) > zero_tolerance)\
+                                                         .astype(init_pos.dtype)
         
         #   And check that we always have initially connected graphs
-        for n in range(nSamples):
-            assert graph.isConnected(graphMatrix[n,:,:])
+        for n in range(n_samples):
+            assert graph.is_connected(graph_matrix[n,:,:])
         
         # We move to compute the initial velocities. Velocities can be
         # either positive or negative, so we do not need to determine
         # the lower and higher, just around zero
-        if 'xMaxInitVel' in kwargs.keys():
-            xMaxInitVel = kwargs['xMaxInitVel']
+        if 'x_max_init_vel' in kwargs.keys():
+            x_max_init_vel = kwargs['x_max_init_vel']
         else:
-            xMaxInitVel = 3.
+            x_max_init_vel = 3.
             #   Takes five seconds to traverse half the map
         # Same for the other axis
-        if 'yMaxInitVel' in kwargs.keys():
-            yMaxInitVel = kwargs['yMaxInitVel']
+        if 'y_max_init_vel' in kwargs.keys():
+            y_max_init_vel = kwargs['y_max_init_vel']
         else:
-            yMaxInitVel = 3.
+            y_max_init_vel = 3.
         
         # And sample the velocities
-        xInitVel = np.random.uniform(low = -xMaxInitVel, high = xMaxInitVel,
-                                     size = (nSamples, 1, nAgents))
-        yInitVel = np.random.uniform(low = -yMaxInitVel, high = yMaxInitVel,
-                                     size = (nSamples, 1, nAgents))
+        x_init_vel = np.random.uniform(low = -x_max_init_vel, high = x_max_init_vel,
+                                     size = (n_samples, 1, n_agents))
+        y_init_vel = np.random.uniform(low = -y_max_init_vel, high = y_max_init_vel,
+                                     size = (n_samples, 1, n_agents))
         # Add bias
-        xVelBias = np.random.uniform(low = -xMaxInitVel, high = xMaxInitVel,
-                                     size = (nSamples))
-        yVelBias = np.random.uniform(low = -yMaxInitVel, high = yMaxInitVel,
-                                     size = (nSamples))
+        x_vel_bias = np.random.uniform(low = -x_max_init_vel, high = x_max_init_vel,
+                                     size = (n_samples))
+        y_vel_bias = np.random.uniform(low = -y_max_init_vel, high = y_max_init_vel,
+                                     size = (n_samples))
         
         # And concatenate them
-        velBias = np.concatenate((xVelBias, yVelBias)).reshape((nSamples,2,1))
-        initVel = np.concatenate((xInitVel, yInitVel), axis = 1) + velBias
-        #   nSamples x 2 x nAgents
+        vel_bias = np.concatenate((x_vel_bias, y_vel_bias)).reshape((n_samples,2,1))
+        init_vel = np.concatenate((x_init_vel, y_init_vel), axis = 1) + vel_bias
+        #   n_samples x 2 x n_agents
         
-        return initPos, initVel
+        return init_pos, init_vel
         
         
-    def saveVideo(self, saveDir, pos, *args, 
-                  commGraph = None, **kwargs):
+    def save_video(self, save_dir, pos, *args, 
+                  comm_graph = None, **kwargs):
         
-        # Check that pos is a position of shape nSamples x tSamples x 2 x nAgents
+        # Check that pos is a position of shape n_samples x t_samples x 2 x n_agents
         assert len(pos.shape) == 4
-        nSamples = pos.shape[0]
-        tSamples = pos.shape[1]
+        n_samples = pos.shape[0]
+        t_samples = pos.shape[1]
         assert pos.shape[2] == 2
-        nAgents = pos.shape[3]
+        n_agents = pos.shape[3]
         if 'torch' in repr(pos.dtype):
             pos = pos.cpu().numpy()
         
         # Check if there's the need to plot a graph
-        if commGraph is not None:
+        if comm_graph is not None:
             # If there's a communication graph, then it has to have shape
-            #   nSamples x tSamples x nAgents x nAgents
-            assert len(commGraph.shape) == 4
-            assert commGraph.shape[0] == nSamples
-            assert commGraph.shape[1] == tSamples
-            assert commGraph.shape[2] == commGraph.shape[3] == nAgents
-            if 'torch' in repr(commGraph.dtype):
-                commGraph = commGraph.cpu().numpy()
-            showGraph = True
+            #   n_samples x t_samples x n_agents x n_agents
+            assert len(comm_graph.shape) == 4
+            assert comm_graph.shape[0] == n_samples
+            assert comm_graph.shape[1] == t_samples
+            assert comm_graph.shape[2] == comm_graph.shape[3] == n_agents
+            if 'torch' in repr(comm_graph.dtype):
+                comm_graph = comm_graph.cpu().numpy()
+            show_graph = True
         else:
-            showGraph = False
+            show_graph = False
         
-        if 'doPrint' in kwargs.keys():
-            doPrint = kwargs['doPrint']
+        if 'do_print' in kwargs.keys():
+            do_print = kwargs['do_print']
         else:
-            doPrint = self.doPrint
+            do_print = self.do_print
             
         # This number determines how faster or slower to reproduce the video
-        if 'videoSpeed' in kwargs.keys():
-            videoSpeed = kwargs['videoSpeed']
+        if 'video_speed' in kwargs.keys():
+            video_speed = kwargs['video_speed']
         else:
-            videoSpeed = 1.
+            video_speed = 1.
             
-        if 'showVideoSpeed' in kwargs.keys():
-            showVideoSpeed = kwargs['showVideoSpeed']
+        if 'show_video_speed' in kwargs.keys():
+            show_video_speed = kwargs['show_video_speed']
         else:
-            if videoSpeed != 1:
-                showVideoSpeed = True
+            if video_speed != 1:
+                show_video_speed = True
             else:
-                showVideoSpeed = False    
+                show_video_speed = False    
                 
         if 'vel' in kwargs.keys():
             vel = kwargs['vel']
-            if 'showCost' in kwargs.keys():
-                showCost = kwargs['showCost']
+            if 'show_cost' in kwargs.keys():
+                show_cost = kwargs['show_cost']
             else:
-                showCost = True
-            if 'showArrows' in kwargs.keys():
-                showArrows = kwargs['showArrows']
+                show_cost = True
+            if 'show_arrows' in kwargs.keys():
+                show_arrows = kwargs['show_arrows']
             else:
-                showArrows = True
+                show_arrows = True
         else:
-            showCost = False
-            showArrows = False
+            show_cost = False
+            show_arrows = False
         
         # Check that the number of extra arguments fits
         assert len(args) <= 1
@@ -1867,18 +1867,18 @@ class Flocking(_data):
             # samples.
             if type(args[0]) == int:
                 # We can't return more samples than there are available
-                assert args[0] <= nSamples
+                assert args[0] <= n_samples
                 # Randomly choose args[0] indices
-                selectedIndices = np.random.choice(nSamples, size = args[0],
+                selected_indices = np.random.choice(n_samples, size = args[0],
                                                    replace = False)
             else:
                 # The fact that we put else here instead of elif type()==list
                 # allows for np.array to be used as indices as well. In general,
                 # any variable with the ability to index.
-                selectedIndices = args[0]
+                selected_indices = args[0]
                 
             # Select the corresponding samples
-            pos = pos[selectedIndices]
+            pos = pos[selected_indices]
                 
             # Finally, observe that if pos has shape only 3, then that's 
             # because we selected a single sample, so we need to add the extra
@@ -1886,30 +1886,30 @@ class Flocking(_data):
             if len(pos.shape) < 4:
                 pos = np.expand_dims(pos, 0)
                 
-            if showGraph:
-                commGraph = commGraph[selectedIndices]
-                if len(commGraph.shape)< 4:
-                    commGraph = np.expand_dims(commGraph, 0)
+            if show_graph:
+                comm_graph = comm_graph[selected_indices]
+                if len(comm_graph.shape)< 4:
+                    comm_graph = np.expand_dims(comm_graph, 0)
         
         # Where to save the video
-        if not os.path.exists(saveDir):
-            os.mkdir(saveDir)
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
             
-        videoName = 'sampleTrajectory'
+        video_name = 'sample_trajectory'
         
-        xMinMap = np.min(pos[:,:,0,:]) * 1.2
-        xMaxMap = np.max(pos[:,:,0,:]) * 1.2
-        yMinMap = np.min(pos[:,:,1,:]) * 1.2
-        yMaxMap = np.max(pos[:,:,1,:]) * 1.2
+        x_min_map = np.min(pos[:,:,0,:]) * 1.2
+        x_max_map = np.max(pos[:,:,0,:]) * 1.2
+        y_min_map = np.min(pos[:,:,1,:]) * 1.2
+        y_max_map = np.max(pos[:,:,1,:]) * 1.2
         
         # Create video object
         
-        videoMetadata = dict(title = 'Sample Trajectory', artist = 'Flocking',
+        video_metadata = dict(title = 'Sample Trajectory', artist = 'Flocking',
                              comment='Flocking example')
-        videoWriter = FFMpegWriter(fps = videoSpeed/self.samplingTime,
-                                   metadata = videoMetadata)
+        video_writer = FFMpegWriter(fps = video_speed/self.sampling_time,
+                                   metadata = video_metadata)
         
-        if doPrint:
+        if do_print:
             print("\tSaving video(s)...", end = ' ', flush = True)
         
         # For each sample now
@@ -1917,26 +1917,26 @@ class Flocking(_data):
             
             # If there's more than one video to create, enumerate them
             if pos.shape[0] > 1:
-                thisVideoName = videoName + '%03d.mp4' % n
+                this_video_name = video_name + '%03d.mp4' % n
             else:
-                thisVideoName = videoName + '.mp4'
+                this_video_name = video_name + '.mp4'
             
             # Select the corresponding position trajectory
-            thisPos = pos[n]
+            this_pos = pos[n]
             
             # Create figure
-            videoFig = plt.figure(figsize = (5,5))
+            video_fig = plt.figure(figsize = (5,5))
             
             # Set limits
-            plt.xlim((xMinMap, xMaxMap))
-            plt.ylim((yMinMap, yMaxMap))
+            plt.xlim((x_min_map, x_max_map))
+            plt.ylim((y_min_map, y_max_map))
             plt.axis('equal')
             
-            if showVideoSpeed:
-                plt.text(xMinMap, yMinMap, r'Speed: $%.2f$' % videoSpeed)
+            if show_video_speed:
+                plt.text(x_min_map, y_min_map, r'Speed: $%.2f$' % video_speed)
                 
             # Create plot handle
-            plotAgents, = plt.plot([], [], 
+            plot_agents, = plt.plot([], [], 
                                    marker = 'o',
                                    markersize = 3,
                                    linewidth = 0,
@@ -1945,159 +1945,159 @@ class Flocking(_data):
                                    scaley = False)
             
             # Create the video
-            with videoWriter.saving(videoFig,
-                                    os.path.join(saveDir,thisVideoName),
-                                    tSamples):
+            with video_writer.saving(video_fig,
+                                    os.path.join(save_dir,this_video_name),
+                                    t_samples):
                 
-                for t in range(tSamples):
+                for t in range(t_samples):
                         
                     # Plot the agents
-                    plotAgents.set_data(thisPos[t,0,:], thisPos[t,1,:])
-                    videoWriter.grab_frame()
+                    plot_agents.set_data(this_pos[t,0,:], this_pos[t,1,:])
+                    video_writer.grab_frame()
                     
                     # Print
-                    if doPrint:
+                    if do_print:
                         # Sample percentage count
-                        percentageCount = int(
-                                 100*(t+1+n*tSamples)/(tSamples * pos.shape[0])
+                        percentage_count = int(
+                                 100*(t+1+n*t_samples)/(t_samples * pos.shape[0])
                                               )
                         
                         if n == 0 and t == 0:
-                            print("%3d%%" % percentageCount,
+                            print("%3d%%" % percentage_count,
                                   end = '', flush = True)
                         else:
-                            print('\b \b' * 4 + "%3d%%" % percentageCount,
+                            print('\b \b' * 4 + "%3d%%" % percentage_count,
                                   end = '', flush = True)
         
-            plt.close(fig=videoFig)
+            plt.close(fig=video_fig)
             
         # Print
-        if doPrint:
+        if do_print:
             # Erase the percentage and the label
             print('\b \b' * 4 + "OK", flush = True)
             
-        if showGraph:
+        if show_graph:
             
             # Normalize velocity
-            if showArrows:
-                # vel is of shape nSamples x tSamples x 2 x nAgents
-                velNormSq = np.sum(vel ** 2, axis = 2)
-                #   nSamples x tSamples x nAgents
-                maxVelNormSq = np.max(np.max(velNormSq, axis = 2), axis = 1)
-                #   nSamples
-                maxVelNormSq = maxVelNormSq.reshape((nSamples, 1, 1, 1))
-                #   nSamples x 1 x 1 x 1
-                normVel = 2*vel/np.sqrt(maxVelNormSq)
+            if show_arrows:
+                # vel is of shape n_samples x t_samples x 2 x n_agents
+                vel_norm_sq = np.sum(vel ** 2, axis = 2)
+                #   n_samples x t_samples x n_agents
+                max_vel_norm_sq = np.max(np.max(vel_norm_sq, axis = 2), axis = 1)
+                #   n_samples
+                max_vel_norm_sq = max_vel_norm_sq.reshape((n_samples, 1, 1, 1))
+                #   n_samples x 1 x 1 x 1
+                norm_vel = 2*vel/np.sqrt(max_vel_norm_sq)
             
-            if doPrint:
+            if do_print:
                 print("\tSaving graph snapshots...", end = ' ', flush = True)
             
             # Essentially, we will print nGraphs snapshots and save them
             # as images with the graph. This is the best we can do in a
             # reasonable processing time (adding the graph to the video takes
             # forever).
-            time = np.arange(0, self.duration, step = self.samplingTime)
-            assert len(time) == tSamples
+            time = np.arange(0, self.duration, step = self.sampling_time)
+            assert len(time) == t_samples
             
-            nSnapshots = 5 # The number of snapshots we will consider
-            tSnapshots = np.linspace(0, tSamples-1, num = nSnapshots)
-            #   This gives us nSnapshots equally spaced in time. Now, we need
+            n_snapshots = 5 # The number of snapshots we will consider
+            t_snapshots = np.linspace(0, t_samples-1, num = n_snapshots)
+            #   This gives us n_snapshots equally spaced in time. Now, we need
             #   to be sure these are integers
-            tSnapshots = np.unique(tSnapshots.astype(np.int)).astype(np.int)
+            t_snapshots = np.unique(t_snapshots.astype(np.int)).astype(np.int)
             
             # Directory to save the snapshots
-            snapshotDir = os.path.join(saveDir,'graphSnapshots')
+            snapshot_dir = os.path.join(save_dir,'graph_snapshots')
             # Base name of the snapshots
-            snapshotName = 'graphSnapshot'
+            snapshot_name = 'graph_snapshot'
             
             for n in range(pos.shape[0]):
                 
                 if pos.shape[0] > 1:
-                    thisSnapshotDir = snapshotDir + '%03d' % n
-                    thisSnapshotName = snapshotName + '%03d' % n
+                    this_snapshot_dir = snapshot_dir + '%03d' % n
+                    this_snapshot_name = snapshot_name + '%03d' % n
                 else:
-                    thisSnapshotDir = snapshotDir
-                    thisSnapshotName = snapshotName
+                    this_snapshot_dir = snapshot_dir
+                    this_snapshot_name = snapshot_name
                     
-                if not os.path.exists(thisSnapshotDir):
-                    os.mkdir(thisSnapshotDir)
+                if not os.path.exists(this_snapshot_dir):
+                    os.mkdir(this_snapshot_dir)
                 
                 # Get the corresponding positions
-                thisPos = pos[n]
-                thisCommGraph = commGraph[n]
+                this_pos = pos[n]
+                this_comm_graph = comm_graph[n]
                 
-                for t in tSnapshots:
+                for t in t_snapshots:
                     
                     # Get the edge pairs
                     #   Get the graph for this time instant
-                    thisCommGraphTime = thisCommGraph[t]
+                    this_comm_graph_time = this_comm_graph[t]
                     #   Check if it is symmetric
-                    isSymmetric = np.allclose(thisCommGraphTime,
-                                              thisCommGraphTime.T)
-                    if isSymmetric:
+                    is_symmetric = np.allclose(this_comm_graph_time,
+                                              this_comm_graph_time.T)
+                    if is_symmetric:
                         #   Use only half of the matrix
-                        thisCommGraphTime = np.triu(thisCommGraphTime)
+                        this_comm_graph_time = np.triu(this_comm_graph_time)
                     
                     #   Find the position of all edges
-                    outEdge, inEdge = np.nonzero(np.abs(thisCommGraphTime) \
-                                                               > zeroTolerance)
+                    out_edge, in_edge = np.nonzero(np.abs(this_comm_graph_time) \
+                                                               > zero_tolerance)
                     
                     # Create the figure
-                    thisGraphSnapshotFig = plt.figure(figsize = (5,5))
+                    this_graph_snapshot_fig = plt.figure(figsize = (5,5))
                     
                     # Set limits (to be the same as the video)
-                    plt.xlim((xMinMap, xMaxMap))
-                    plt.ylim((yMinMap, yMaxMap))
+                    plt.xlim((x_min_map, x_max_map))
+                    plt.ylim((y_min_map, y_max_map))
                     plt.axis('equal')
                     
                     # Plot the edges
-                    plt.plot([thisPos[t,0,outEdge], thisPos[t,0,inEdge]],
-                             [thisPos[t,1,outEdge], thisPos[t,1,inEdge]],
+                    plt.plot([this_pos[t,0,out_edge], this_pos[t,0,in_edge]],
+                             [this_pos[t,1,out_edge], this_pos[t,1,in_edge]],
                              color = '#A8AAAF', linewidth = 0.75,
                              scalex = False, scaley = False)
                     
                     # Plot the arrows
-                    if showArrows:
-                        for i in range(nAgents):
-                            plt.arrow(thisPos[t,0,i], thisPos[t,1,i],
-                                      normVel[n,t,0,i], normVel[n,t,1,i])
+                    if show_arrows:
+                        for i in range(n_agents):
+                            plt.arrow(this_pos[t,0,i], this_pos[t,1,i],
+                                      norm_vel[n,t,0,i], norm_vel[n,t,1,i])
                 
                     # Plot the nodes
-                    plt.plot(thisPos[t,0,:], thisPos[t,1,:],
+                    plt.plot(this_pos[t,0,:], this_pos[t,1,:],
                              marker = 'o', markersize = 3, linewidth = 0,
                              color = '#01256E', scalex = False, scaley = False)
                     
                     # Add the cost value
-                    if showCost:
-                        totalCost = self.evaluate(vel = vel[:,t:t+1,:,:])
-                        plt.text(xMinMap,yMinMap, r'Cost: $%.4f$' % totalCost)
+                    if show_cost:
+                        total_cost = self.evaluate(vel = vel[:,t:t+1,:,:])
+                        plt.text(x_min_map,y_min_map, r'Cost: $%.4f$' % total_cost)
                     
                     # Add title
                     plt.title("Time $t=%.4f$s" % time[t])
                     
                     # Save figure
-                    thisGraphSnapshotFig.savefig(os.path.join(thisSnapshotDir,
-                                            thisSnapshotName + '%03d.pdf' % t))
+                    this_graph_snapshot_fig.savefig(os.path.join(this_snapshot_dir,
+                                            this_snapshot_name + '%03d.pdf' % t))
                     
                     # Close figure
-                    plt.close(fig = thisGraphSnapshotFig)
+                    plt.close(fig = this_graph_snapshot_fig)
                     
                     # Print percentage completion
-                    if doPrint:
+                    if do_print:
                         # Sample percentage count
-                        percentageCount = int(
-                                 100*(t+1+n*tSamples)/(tSamples * pos.shape[0])
+                        percentage_count = int(
+                                 100*(t+1+n*t_samples)/(t_samples * pos.shape[0])
                                               )
                         if n == 0 and t == 0:
                             # Print new value
-                            print("%3d%%" % percentageCount,
+                            print("%3d%%" % percentage_count,
                                   end = '', flush = True)
                         else:
                             # Erase the previous characters
-                            print('\b \b' * 4 + "%3d%%" % percentageCount,
+                            print('\b \b' * 4 + "%3d%%" % percentage_count,
                                   end = '', flush = True)
                 
             # Print
-            if doPrint:
+            if do_print:
                 # Erase the percentage and the label
                 print('\b \b' * 4 + "OK", flush = True)
