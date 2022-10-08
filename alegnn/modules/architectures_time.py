@@ -3,7 +3,7 @@
 # Luana Ruiz, rubruiz@seas.upenn.edu
 # Kate Tolstaya, eig@seas.upenn.edu
 """
-architecturesTime.py Architectures module
+architectures_time.py Architectures module
 
 Definition of GNN architectures. The basic idea of these architectures is that
 the data comes in the form {(S_t, x_t)} where the shift operator as well as the
@@ -26,7 +26,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-import alegnn.utils.graphML as gml
+import alegnn.utils.graph_ML as gml
 
 
 zero_tolerance = 1e-9 # Absolute values below this number are considered zero.

@@ -45,7 +45,7 @@ from matplotlib.animation import FFMpegWriter
 import numpy as np
 import torch
 
-import alegnn.utils.graphTools as graph
+import alegnn.utils.graph_tools as graph
 
 zeroTolerance = 1e-9 # Values below this number are considered zero.
 

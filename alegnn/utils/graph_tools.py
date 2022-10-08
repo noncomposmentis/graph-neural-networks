@@ -2,29 +2,29 @@
 # Fernando Gama, fgama@seas.upenn.edu.
 # Luana Ruiz, rubruiz@seas.upenn.edu.
 """
-graphTools.py Tools for handling graphs
+graph_tools.py Tools for handling graphs
 
 Functions:
 
-plotGraph: plots a graph from an adjacency matrix
-printGraph: prints (saves) a graph from an adjacency matrix
-adjacencyToLaplacian: transform an adjacency matrix into a Laplacian matrix
-normalizeAdjacency: compute the normalized adjacency
-normalizeLaplacian: compute the normalized Laplacian
-computeGFT: Computes the eigenbasis of a GSO
-matrixPowers: computes the matrix powers
-computeNonzeroRows: compute nonzero elements across rows
-computeNeighborhood: compute the neighborhood of a graph
-computeSourceNodes: compute source nodes for the source localization problem
-isConnected: determines if a graph is connected
-sparsifyGraph: sparsifies a given graph matrix
-createGraph: creates an adjacency marix
-permIdentity: identity permutation
-permDegree: order nodes by degree
-permSpectralProxies: order nodes by spectral proxies score
-permEDS: order nodes by EDS score
-edgeFailSampling: samples the edges of a given graph
-splineBasis: Returns the B-spline basis (taken from github.com/mdeff)
+plot_graph: plots a graph from an adjacency matrix
+print_graph: prints (saves) a graph from an adjacency matrix
+adjacency_to_laplacian: transform an adjacency matrix into a Laplacian matrix
+normalize_adjacency: compute the normalized adjacency
+normalize_laplacian: compute the normalized Laplacian
+compute_gft: Computes the eigenbasis of a GSO
+matrix_powers: computes the matrix powers
+compute_nonzero_rows: compute nonzero elements across rows
+compute_neighborhood: compute the neighborhood of a graph
+compute_source_nodes: compute source nodes for the source localization problem
+is_connected: determines if a graph is connected
+sparsify_graph: sparsifies a given graph matrix
+create_graph: creates an adjacency marix
+perm_identity: identity permutation
+perm_degree: order nodes by degree
+perm_spectral_proxies: order nodes by spectral proxies score
+perm_eds: order nodes by EDS score
+edge_fail_sampling: samples the edges of a given graph
+spline_basis: Returns the B-spline basis (taken from github.com/mdeff)
 
 Classes:
 
@@ -42,32 +42,32 @@ matplotlib.rcParams['text.usetex'] = True
 matplotlib.rcParams['font.family'] = 'serif'
 import matplotlib.pyplot as plt
 
-zeroTolerance = 1e-9 # Values below this number are considered zero.
+zero_tolerance = 1e-9 # Values below this number are considered zero.
 
 # If adjacency matrices are not symmetric these functions might not work as
 # desired: the degree will be the in-degree to each node, and the Laplacian
 # is not defined for directed graphs. Same caution is advised when using
 # graphs with self-loops.
 
-def plotGraph(adjacencyMatrix, **kwargs):
+def plot_graph(adjacency_matrix, **kwargs):
     """
-    plotGraph(A): plots a graph from adjacency matrix A of size N x N
+    plot_graph(A): plots a graph from adjacency matrix A of size N x N
     
     Optional keyword arguments:
         'positions' (np.array, default: points in a circle of radius 1):
                 size N x 2 of positions for each node
-        'figSize' (int, default: 5): size of the figure
+        'fig_size' (int, default: 5): size of the figure
         'linewidth' (int, default: 1): edge width
-        'markerSize' (int, default: 15): node size
-        'markerShape' (string, default: 'o'): node shape
+        'marker_size' (int, default: 15): node size
+        'marker_shape' (string, default: 'o'): node shape
         'color' (hex code string, default: '#01256E'): color of the nodes
-        'nodeLabel' (list, default: None): list of length N where each element
+        'node_label' (list, default: None): list of length N where each element
             corresponds to the label of each node
     """
     
     # Data
     #   Adjacency matrix
-    W = adjacencyMatrix
+    W = adjacency_matrix
     assert W.shape[0] == W.shape[1]
     N = W.shape[0]
     #   Positions (optional)
@@ -83,68 +83,68 @@ def plotGraph(adjacencyMatrix, **kwargs):
         
     # Create figure
     #   Figure size
-    if 'figSize' in kwargs.keys():
-        figSize = kwargs['figSize']
+    if 'fig_size' in kwargs.keys():
+        fig_size = kwargs['fig_size']
     else:
-        figSize = 5
+        fig_size = 5
     #   Line width
-    if 'lineWidth' in kwargs.keys():
-        lineWidth = kwargs['lineWidth']
+    if 'line_width' in kwargs.keys():
+        line_width = kwargs['line_width']
     else:
-        lineWidth = 1
+        line_width = 1
     #   Marker Size
-    if 'markerSize' in kwargs.keys():
-        markerSize = kwargs['markerSize']
+    if 'marker_size' in kwargs.keys():
+        marker_size = kwargs['marker_size']
     else:
-        markerSize = 15
+        marker_size = 15
     #   Marker shape
-    if 'markerShape' in kwargs.keys():
-        markerShape = kwargs['markerShape']
+    if 'marker_shape' in kwargs.keys():
+        marker_shape = kwargs['marker_shape']
     else:
-        markerShape = 'o'
+        marker_shape = 'o'
     #   Marker color
     if 'color' in kwargs.keys():
-        markerColor = kwargs['color']
+        marker_color = kwargs['color']
     else:
-        markerColor = '#01256E'
+        marker_color = '#01256E'
     #   Node labeling
-    if 'nodeLabel' in kwargs.keys():
-        doText = True
-        nodeLabel = kwargs['nodeLabel']
-        assert len(nodeLabel) == N
+    if 'node_label' in kwargs.keys():
+        do_text = True
+        node_label = kwargs['node_label']
+        assert len(node_label) == N
     else:
-        doText = False
+        do_text = False
         
     # Plot
-    figGraph = plt.figure(figsize = (1*figSize, 1*figSize))
+    fig_graph = plt.figure(figsize = (1*fig_size, 1*fig_size))
     for i in range(N):
         for j in range(N):
             if W[i,j] > 0:
                 plt.plot([pos[0,i], pos[0,j]], [pos[1,i], pos[1,j]],
-                         linewidth = W[i,j] * lineWidth,
+                         linewidth = W[i,j] * line_width,
                          color = '#A8AAAF')
     for i in range(N):
-        plt.plot(pos[0,i], pos[1,i], color = markerColor,
-                 marker = markerShape, markerSize = markerSize)
-        if doText:
-            plt.text(pos[0,i], pos[1,i], nodeLabel[i],
+        plt.plot(pos[0,i], pos[1,i], color = marker_color,
+                 marker = marker_shape, markerSize = marker_size)
+        if do_text:
+            plt.text(pos[0,i], pos[1,i], node_label[i],
                      verticalalignment = 'center',
                      horizontalalignment = 'center',
                      color = '#F2F2F3')
             
-    return figGraph
+    return fig_graph
 
-def printGraph(adjacencyMatrix, **kwargs):
+def print_graph(adjacency_matrix, **kwargs):
     """
-    printGraph(A): Wrapper for plot graph to directly save it as a graph (with 
+    print_graph(A): Wrapper for plot graph to directly save it as a graph (with 
         no axis, nor anything else like that, more aesthetic, less changes)
     
     Optional keyword arguments:
-        'saveDir' (os.path, default: '.'): directory where to save the graph
+        'save_dir' (os.path, default: '.'): directory where to save the graph
         'legend' (default: None): Text for a legend
-        'xLabel' (str, default: None): Text for the x axis
-        'yLabel' (str, default: None): Text for the y axis
-        'graphName' (str, default: 'graph'): name to save the file
+        'x_label' (str, default: None): Text for the x axis
+        'y_label' (str, default: None): Text for the y axis
+        'graph_name' (str, default: 'graph'): name to save the file
         'positions' (np.array, default: points in a circle of radius 1):
                 size N x 2 of positions for each node
         'figSize' (int, default: 5): size of the figure
@@ -159,50 +159,50 @@ def printGraph(adjacencyMatrix, **kwargs):
     # Wrapper for plot graph to directly save it as a graph (with no axis,
     # nor anything else like that, more aesthetic, less changes)
     
-    W = adjacencyMatrix
+    W = adjacency_matrix
     assert W.shape[0] == W.shape[1]
     
     # Printing options
-    if 'saveDir' in kwargs.keys():
-        saveDir = kwargs['saveDir']
+    if 'save_dir' in kwargs.keys():
+        save_dir = kwargs['save_dir']
     else:
-        saveDir = '.'
+        save_dir = '.'
     if 'legend' in kwargs.keys():
-        doLegend = True
-        legendText = kwargs['legend']
+        do_legend = True
+        legend_text = kwargs['legend']
     else:
-        doLegend = False
-    if 'xLabel' in kwargs.keys():
-        doXlabel = True
-        xLabelText = kwargs['xLabel']
+        do_legend = False
+    if 'x_label' in kwargs.keys():
+        do_x_label = True
+        x_label_text = kwargs['x_label']
     else:
-        doXlabel = False
-    if 'yLabel' in kwargs.keys():
-        doYlabel = True
-        yLabelText = kwargs['yLabel']
+        do_x_label = False
+    if 'y_label' in kwargs.keys():
+        do_y_label = True
+        y_label_text = kwargs['y_label']
     else:
-        doYlabel = False
-    if 'graphName' in kwargs.keys():
-        graphName = kwargs['graphName']
+        do_y_label = False
+    if 'graph_name' in kwargs.keys():
+        graph_name = kwargs['graph_name']
     else:
-        graphName = 'graph'
+        graph_name = 'graph'
     
-    figGraph = plotGraph(adjacencyMatrix, **kwargs)
+    fig_graph = plot_graph(adjacency_matrix, **kwargs)
     
     plt.axis('off')
-    if doXlabel:
-        plt.xlabel(xLabelText)
-    if doYlabel:
-        plt.yLabel(yLabelText)
-    if doLegend:
-        plt.legend(legendText)
+    if do_x_label:
+        plt.xlabel(x_label_text)
+    if do_y_label:
+        plt.ylabel(y_label_text)
+    if do_legend:
+        plt.legend(legend_text)
     
-    figGraph.savefig(os.path.join(saveDir, '%s.pdf' % graphName),
+    fig_graph.savefig(os.path.join(save_dir, '%s.pdf' % graph_name),
                      bbox_inches = 'tight', transparent = True)
 
-def adjacencyToLaplacian(W):
+def adjacency_to_laplacian(W):
     """
-    adjacencyToLaplacian: Computes the Laplacian from an Adjacency matrix
+    adjacency_to_laplacian: Computes the Laplacian from an Adjacency matrix
 
     Input:
 
@@ -221,9 +221,9 @@ def adjacencyToLaplacian(W):
     # Return the Laplacian
     return D - W
 
-def normalizeAdjacency(W):
+def normalize_adjacency(W):
     """
-    NormalizeAdjacency: Computes the degree-normalized adjacency matrix
+    normalize_adjacency: Computes the degree-normalized adjacency matrix
 
     Input:
 
@@ -244,9 +244,9 @@ def normalizeAdjacency(W):
     # Return the Normalized Adjacency
     return D @ W @ D
 
-def normalizeLaplacian(L):
+def normalize_laplacian(L):
     """
-    NormalizeLaplacian: Computes the degree-normalized Laplacian matrix
+    normalize_laplacian: Computes the degree-normalized Laplacian matrix
 
     Input:
 
@@ -267,15 +267,15 @@ def normalizeLaplacian(L):
     # Return the Normalized Laplacian
     return D @ L @ D
 
-def computeGFT(S, order = 'no'):
+def compute_gft(S, order = 'no'):
     """
-    computeGFT: Computes the frequency basis (eigenvectors) and frequency
+    compute_gft: Computes the frequency basis (eigenvectors) and frequency
         coefficients (eigenvalues) of a given GSO
 
     Input:
 
         S (np.array): graph shift operator matrix
-        order (string): 'no', 'increasing', 'totalVariation' chosen order of
+        order (string): 'no', 'increasing', 'total_variation' chosen order of
             frequency coefficients (default: 'no')
 
     Output:
@@ -285,32 +285,32 @@ def computeGFT(S, order = 'no'):
         V (np.array): matrix with frequency basis (eigenvectors)
     """
     # Check the correct order input
-    assert order == 'totalVariation' or order == 'no' or order == 'increasing'
+    assert order == 'total_variation' or order == 'no' or order == 'increasing'
     # Check the matrix is square
     assert S.shape[0] == S.shape[1]
     # Check if it is symmetric
-    symmetric = np.allclose(S, S.T, atol = zeroTolerance)
+    symmetric = np.allclose(S, S.T, atol = zero_tolerance)
     # Then, compute eigenvalues and eigenvectors
     if symmetric:
         e, V = np.linalg.eigh(S)
     else:
         e, V = np.linalg.eig(S)
     # Sort the eigenvalues by the desired error:
-    if order == 'totalVariation':
-        eMax = np.max(e)
-        sortIndex = np.argsort(np.abs(e - eMax))
+    if order == 'total_variation':
+        e_max = np.max(e)
+        sort_index = np.argsort(np.abs(e - e_max))
     elif order == 'increasing':
-        sortIndex = np.argsort(np.abs(e))
+        sort_index = np.argsort(np.abs(e))
     else:
-        sortIndex = np.arange(0, S.shape[0])
-    e = e[sortIndex]
-    V = V[:, sortIndex]
+        sort_index = np.arange(0, S.shape[0])
+    e = e[sort_index]
+    V = V[:, sort_index]
     E = np.diag(e)
     return E, V
 
-def matrixPowers(S,K):
+def matrix_powers(S,K):
     """
-    matrixPowers(A, K) Computes the matrix powers A^k for k = 0, ..., K-1
+    matrix_powers(A, K) Computes the matrix powers A^k for k = 0, ..., K-1
 
     Inputs:
         A: either a single N x N matrix or a collection E x N x N of E matrices.
@@ -327,61 +327,61 @@ def matrixPowers(S,K):
         assert S.shape[1] == N
         E = 1
         S = S.reshape(1, N, N)
-        scalarWeights = True
+        scalar_weights = True
     elif len(S.shape) == 3:
         E = S.shape[0]
         N = S.shape[1]
         assert S.shape[2] == N
-        scalarWeights = False
+        scalar_weights = False
 
     # Now, let's build the powers of S:
-    thisSK = np.tile(np.eye(N, N).reshape(1,N,N), [E, 1, 1])
-    SK = thisSK.reshape(E, 1, N, N)
+    this_sk = np.tile(np.eye(N, N).reshape(1,N,N), [E, 1, 1])
+    SK = this_sk.reshape(E, 1, N, N)
     for k in range(1,K):
-        thisSK = thisSK @ S
-        SK = np.concatenate((SK, thisSK.reshape(E, 1, N, N)), axis = 1)
+        this_sk = this_sk @ S
+        SK = np.concatenate((SK, this_sk.reshape(E, 1, N, N)), axis = 1)
     # Take out the first dimension if it was a single GSO
-    if scalarWeights:
+    if scalar_weights:
         SK = SK.reshape(K, N, N)
 
     return SK
 
-def computeNonzeroRows(S, Nl = 'all'):
+def compute_nonzero_rows(S, nl = 'all'):
     """
-    computeNonzeroRows: Find the position of the nonzero elements of each
+    compute_nonzero_rows: Find the position of the nonzero elements of each
         row of a matrix
 
     Input:
 
         S (np.array): matrix
-        Nl (int or 'all'): number of rows to compute the nonzero elements; if
-            'all', then Nl = S.shape[0]. Rows are counted from the top.
+        nl (int or 'all'): number of rows to compute the nonzero elements; if
+            'all', then nl = S.shape[0]. Rows are counted from the top.
 
     Output:
 
-        nonzeroElements (list): list of size Nl where each element is an array
+        nonzeroElements (list): list of size nl where each element is an array
             of the indices of the nonzero elements of the corresponding row.
     """
     # Find the position of the nonzero elements of each row of the matrix S.
-    # Nl = 'all' means for all rows, otherwise, it will be an int.
-    if Nl == 'all':
-        Nl = S.shape[0]
-    assert Nl <= S.shape[0]
+    # nl = 'all' means for all rows, otherwise, it will be an int.
+    if nl == 'all':
+        nl = S.shape[0]
+    assert nl <= S.shape[0]
     # Save neighborhood variable
     neighborhood = []
     # For each of the selected nodes
-    for n in range(Nl):
+    for n in range(nl):
         neighborhood += [np.flatnonzero(S[n,:])]
 
     return neighborhood
 
-def computeNeighborhood(S, K, N = 'all', nb = 'all', outputType = 'list'):
+def compute_neighborhood(S, K, N = 'all', nb = 'all', output_type = 'list'):
     """
-    computeNeighborhood: compute the set of nodes within the K-hop neighborhood
+    compute_neighborhood: compute the set of nodes within the K-hop neighborhood
         of a graph (i.e. all nodes that can be reached within K-hops of each
         node)
 
-        computeNeighborhood(W, K, N = 'all', nb = 'all', outputType = 'list')
+        compute_neighborhood(W, K, N = 'all', nb = 'all', output_type = 'list')
 
     Input:
         W (np.array): adjacency matrix
@@ -392,7 +392,7 @@ def computeNeighborhood(S, K, N = 'all', nb = 'all', outputType = 'list'):
             neighborhood (i.e. nodes beyond nb are not trimmed out of the
             neighborhood; note that nodes smaller than nb that can be reached
             by nodes greater than nb, are included. default: 'all')
-        outputType ('list' or 'matrix'): choose if the output is given in the
+        output_type ('list' or 'matrix'): choose if the output is given in the
             form of a list of arrays, or a matrix with zero-padding of neighbors
             with neighborhoods smaller than the maximum neighborhood
             (default: 'list')
@@ -401,8 +401,8 @@ def computeNeighborhood(S, K, N = 'all', nb = 'all', outputType = 'list'):
         neighborhood (np.array or list): contains the indices of the neighboring
             nodes following the order established by the adjacency matrix.
     """
-    # outputType is either a list (a list of np.arrays) or a matrix.
-    assert outputType == 'list' or outputType == 'matrix'
+    # output_type is either a list (a list of np.arrays) or a matrix.
+    assert output_type == 'list' or output_type == 'matrix'
     # Here, we can assume S is already sparse, in which case is a list of
     # sparse matrices, or that S is full, in which case it is a 3-D array.
     if isinstance(S, list):
@@ -410,16 +410,16 @@ def computeNeighborhood(S, K, N = 'all', nb = 'all', outputType = 'list'):
         # of the list has to be the number of edge weights. But we actually need
         # to sum over all edges to be sure we consider all reachable nodes on
         # at least one of the edge dimensions
-        newS = 0.
+        new_s = 0.
         for e in len(S):
             # First check it's a matrix, and a square one
             assert len(S[e]) == 2
             assert S[e].shape[0] == S[e].shape[1]
             # For each edge, convert to sparse (in COO because we care about
             # coordinates to find the neighborhoods)
-            newS += scipy.sparse.coo_matrix(
-                              (np.abs(S[e]) > zeroTolerance).astype(S[e].dtype))
-        S = (newS > zeroTolerance).astype(newS.dtype)
+            new_s += scipy.sparse.coo_matrix(
+                              (np.abs(S[e]) > zero_tolerance).astype(S[e].dtype))
+        S = (new_s > zero_tolerance).astype(new_s.dtype)
     else:
         # if S is not a list, check that it is either a E x N x N or a N x N
         # array.
@@ -431,12 +431,12 @@ def computeNeighborhood(S, K, N = 'all', nb = 'all', outputType = 'list'):
             # there. (Obs.: While normally assume that all weights are positive,
             # let's just add on abs() value to avoid any cancellations).
             S = np.sum(np.abs(S), axis = 0)
-            S = scipy.sparse.coo_matrix((S > zeroTolerance).astype(S.dtype))
+            S = scipy.sparse.coo_matrix((S > zero_tolerance).astype(S.dtype))
         else:
             # In this case, if it is a 2-D array, we do not need to add over the
             # edge dimension, so we just sparsify it
             assert S.shape[0] == S.shape[1]
-            S = scipy.sparse.coo_matrix((S > zeroTolerance).astype(S.dtype))
+            S = scipy.sparse.coo_matrix((S > zero_tolerance).astype(S.dtype))
     # Now, we finally have a sparse, binary matrix, with the connections.
     # Now check that K and N are correct inputs.
     # K is an int (target K-hop neighborhood)
@@ -451,117 +451,117 @@ def computeNeighborhood(S, K, N = 'all', nb = 'all', outputType = 'list'):
     assert nb >= 0 and nb <= S.shape[0]
 
     # All nodes are in their own neighborhood, so
-    allNeighbors = [ [n] for n in range(S.shape[0])]
+    all_neighbors = [ [n] for n in range(S.shape[0])]
     # Now, if K = 0, then these are all the neighborhoods we need.
     # And also keep track only about the nodes we care about
     neighbors = [ [n] for n in range(N)]
     # But if K > 0
     if K > 0:
         # Let's start with the one-hop neighborhood of all nodes (we need this)
-        nonzeroS = list(S.nonzero())
+        nonzero_s = list(S.nonzero())
         # This is a tuple with two arrays, the first one containing the row
         # index of the nonzero elements, and the second one containing the
         # column index of the nonzero elements.
         # Now, we want the one-hop neighborhood of all nodes (and all nodes have
         # a one-hop neighborhood, since the graphs are connected)
-        for n in range(len(nonzeroS[0])):
+        for n in range(len(nonzero_s[0])):
             # The list in index 0 is the nodes, the list in index 1 is the
             # corresponding neighbor
-            allNeighbors[nonzeroS[0][n]].append(nonzeroS[1][n])
+            all_neighbors[nonzero_s[0][n]].append(nonzero_s[1][n])
         # Now that we have the one-hop neighbors, we just need to do a depth
         # first search looking for the one-hop neighborhood of each neighbor
         # and so on.
-        oneHopNeighbors = allNeighbors.copy()
+        one_hop_neighbors = all_neighbors.copy()
         # We have already visited the nodes themselves, since we already
         # gathered the one-hop neighbors.
-        visitedNodes = [ [n] for n in range(N)]
+        visited_nodes = [ [n] for n in range(N)]
         # Keep only the one-hop neighborhood of the ones we're interested in
-        neighbors = [list(set(allNeighbors[n])) for n in range(N)]
+        neighbors = [list(set(all_neighbors[n])) for n in range(N)]
         # For each hop
         for k in range(1,K):
             # For each of the nodes we care about
             for i in range(N):
                 # Store the new neighbors to be included for node i
-                newNeighbors = []
+                new_neighbors = []
                 # Take each of the neighbors we already have
                 for j in neighbors[i]:
                     # and if we haven't visited those neighbors yet
-                    if j not in visitedNodes[i]:
+                    if j not in visited_nodes[i]:
                         # Just look for our neighbor's one-hop neighbors and
                         # add them to the neighborhood list
-                        newNeighbors.extend(oneHopNeighbors[j])
+                        new_neighbors.extend(one_hop_neighbors[j])
                         # And don't forget to add the node to the visited ones
                         # (we already have its one-hope neighborhood)
-                        visitedNodes[i].append(j)
+                        visited_nodes[i].append(j)
                 # And now that we have added all the new neighbors, we add them
                 # to the old neighbors
-                neighbors[i].extend(newNeighbors)
-                # And get rid of those that appear more than once
+                neighbors[i].extend(new_neighbors)
+                # And get r_id of those that appear more than once
                 neighbors[i] = list(set(neighbors[i]))
 
-    # Now that all nodes have been collected, get rid of those beyond nb
+    # Now that all nodes have been collected, get r_id of those beyond nb
     for i in range(N):
         # Get the neighborhood
-        thisNeighborhood = neighbors[i].copy()
-        # And get rid of the excess nodes
-        neighbors[i] = [j for j in thisNeighborhood if j < nb]
+        this_neighborhood = neighbors[i].copy()
+        # And get r_id of the excess nodes
+        neighbors[i] = [j for j in this_neighborhood if j < nb]
 
 
-    if outputType == 'matrix':
+    if output_type == 'matrix':
         # List containing all the neighborhood sizes
-        neighborhoodSizes = [len(x) for x in neighbors]
+        neighborhood_sizes = [len(x) for x in neighbors]
         # Obtain max number of neighbors
-        maxNeighborhoodSize = max(neighborhoodSizes)
+        max_neighborhood_size = max(neighborhood_sizes)
         # then we have to check each neighborhood and find if we need to add
         # more nodes (itself) to pad it so we can build a matrix
-        paddedNeighbors = []
+        padded_neighbors = []
         for n in range(N):
-            paddedNeighbors += [np.concatenate(
+            padded_neighbors += [np.concatenate(
                        (neighbors[n],
-                        n * np.ones(maxNeighborhoodSize - neighborhoodSizes[n]))
+                        n * np.ones(max_neighborhood_size - neighborhood_sizes[n]))
                                 )]
-        # And now that every element in the list paddedNeighbors has the same
+        # And now that every element in the list padded_neighbors has the same
         # length, we can make it a matrix
-        neighbors = np.array(paddedNeighbors, dtype = np.int)
+        neighbors = np.array(padded_neighbors, dtype = np.int)
 
     return neighbors
 
-def computeSourceNodes(A, C):
+def compute_source_nodes(A, C):
     """
-    computeSourceNodes: compute source nodes for the source localization problem
+    compute_source_nodes: compute source nodes for the source localization problem
     
     Input:
         A (np.array): adjacency matrix of shape N x N
         C (int): number of classes
         
     Output:
-        sourceNodes (list): contains the indices of the C source nodes
+        source_nodes (list): contains the indices of the C source nodes
         
     Uses the adjacency matrix to compute C communities by means of spectral 
     clustering, and then selects the node with largest degree within each 
     community
     """
-    sourceNodes = []
+    source_nodes = []
     degree = np.sum(A, axis = 0) # degree of each vector
     # Compute communities
-    communityClusters = SpectralClustering(n_clusters = C,
+    community_clusters = SpectralClustering(n_clusters = C,
                                            affinity = 'precomputed',
                                            assign_labels = 'discretize')
-    communityClusters = communityClusters.fit(A)
-    communityLabels = communityClusters.labels_
+    community_clusters = community_clusters.fit(A)
+    community_labels = community_clusters.labels_
     # For each community
     for c in range(C):
-        communityNodes = np.nonzero(communityLabels == c)[0]
-        degreeSorted = np.argsort(degree[communityNodes])
-        sourceNodes = sourceNodes + [communityNodes[degreeSorted[-1]]]
+        community_nodes = np.nonzero(community_labels == c)[0]
+        degree_sorted = np.argsort(degree[community_nodes])
+        source_nodes = source_nodes + [community_nodes[degree_sorted[-1]]]
     
-    return sourceNodes
+    return source_nodes
         
         
 
-def isConnected(W):
+def is_connected(W):
     """
-    isConnected: determine if a graph is connected
+    is_connected: determine if a graph is connected
 
     Input:
         W (np.array): adjacency matrix
@@ -574,28 +574,28 @@ def isConnected(W):
     direction of all edges, and just keep them as undirected, then the resulting
     graph would be connected).
     """
-    undirected = np.allclose(W, W.T, atol = zeroTolerance)
+    undirected = np.allclose(W, W.T, atol = zero_tolerance)
     if not undirected:
         W = 0.5 * (W + W.T)
-    L = adjacencyToLaplacian(W)
-    E, V = computeGFT(L)
+    L = adjacency_to_laplacian(W)
+    E, V = compute_gft(L)
     e = np.diag(E) # only eigenvavlues
     # Check how many values are greater than zero:
-    nComponents = np.sum(e < zeroTolerance) # Number of connected components
-    if nComponents == 1:
+    n_components = np.sum(e < zero_tolerance) # Number of connected components
+    if n_components == 1:
         connected = True
     else:
         connected = False
     return connected
 
-def sparsifyGraph(W, sparsificationType, p):
+def sparsify_graph(W, sparsification_type, p):
     """
-    sparsifyGraph: sparsifies a given graph matrix
+    sparsify_graph: sparsifies a given graph matrix
     
     Input:
         W (np.array): adjacency matrix
-        sparsificationType ('threshold' or 'NN'): threshold or nearest-neighbor
-        sparsificationParameter (float): sparsification parameter (value of the
+        sparsification_type ('threshold' or 'NN'): threshold or nearest-neighbor
+        sparsification_parameter (float): sparsification parameter (value of the
             threshold under which edges are deleted or the number of NN to keep)
         
     Output:
@@ -622,113 +622,113 @@ def sparsifyGraph(W, sparsificationType, p):
     # Check input arguments
     N = W.shape[0]
     assert W.shape[1] == N
-    assert sparsificationType == 'threshold' or sparsificationType == 'NN'
+    assert sparsification_type == 'threshold' or sparsification_type == 'NN'
     
-    connected = isConnected(W)
-    undirected = np.allclose(W, W.T, atol = zeroTolerance)
+    connected = is_connected(W)
+    undirected = np.allclose(W, W.T, atol = zero_tolerance)
     #   np.allclose() gives true if matrices W and W.T are the same up to
     #   atol.
     
     # Start with thresholding
-    if sparsificationType == 'threshold':
-        Wnew = W.copy()
-        Wnew[np.abs(Wnew) < p] = 0.
+    if sparsification_type == 'threshold':
+        wnew = W.copy()
+        wnew[np.abs(wnew) < p] = 0.
         # If the original graph was connected, we need to be sure this one is
         # connected as well
         if connected:
             # Check if the new graph is connected
-            newGraphIsConnected = isConnected(Wnew)
+            new_graph_is_connected = is_connected(wnew)
             # While it is not connected
-            while not newGraphIsConnected:
+            while not new_graph_is_connected:
                 # We need to reduce the size of p until we get it connected
                 p = p/2.
-                Wnew = W.copy()
-                Wnew[np.abs(Wnew) < p] = 0.
+                wnew = W.copy()
+                wnew[np.abs(wnew) < p] = 0.
                 # Check if it is connected now
-                newGraphIsConnected = isConnected(Wnew)
+                new_graph_is_connected = is_connected(wnew)
     # Now, let's move to k nearest neighbors
-    elif sparsificationType == 'NN':
+    elif sparsification_type == 'NN':
         # We sort the values of each row (in increasing order)
-        Wsorted = np.sort(W, axis = 1)
+        wsorted = np.sort(W, axis = 1)
         # Pick the kth largest
-        kthLargest = Wsorted[:, -p] # array of size N
+        kth_largest = wsorted[:, -p] # array of size N
         # Find the elements that are greater or equal that these values
-        maskOfEdgesToKeep = (W >= kthLargest.reshape([N,1])).astype(W.dtype)
+        mask_of_edges_to_keep = (W >= kth_largest.reshape([N,1])).astype(W.dtype)
         # And keep those edges
-        Wnew = W * maskOfEdgesToKeep
+        wnew = W * mask_of_edges_to_keep
         # If the original graph was connected
         if connected:
             # Check if the new graph is connected
-            newGraphIsConnected = isConnected(Wnew)
+            new_graph_is_connected = is_connected(wnew)
             # While it is not connected
-            while not newGraphIsConnected:
+            while not new_graph_is_connected:
                 # Increase the number of k-NN by 1
                 p = p + 1
                 # Compute the new kth Largest
-                kthLargest = Wsorted[:, -p] # array of size N
+                kth_largest = wsorted[:, -p] # array of size N
                 # Find the elements that are greater or equal that these values
-                maskOfEdgesToKeep = (W >= kthLargest.reshape([N,1]))\
+                mask_of_edges_to_keep = (W >= kth_largest.reshape([N,1]))\
                                                                 .astype(W.dtype)
                 # And keep those edges
-                Wnew = W * maskOfEdgesToKeep
+                wnew = W * mask_of_edges_to_keep
                 # Check if it is connected now
-                newGraphIsConnected = isConnected(Wnew)
+                new_graph_is_connected = is_connected(wnew)
         # if it's undirected, this is the moment to reconvert it as undirected
         if undirected:
-            Wnew = 0.5 * (Wnew + Wnew.T)
+            wnew = 0.5 * (wnew + wnew.T)
             
-    return Wnew
+    return wnew
 
-def createGraph(graphType, N, graphOptions):
+def create_graph(graph_type, N, graph_options):
     """
-    createGraph: creates a graph of a specified type
+    create_graph: creates a graph of a specified type
     
     Input:
-        graphType (string): 'SBM', 'SmallWorld', 'fuseEdges', and 'adjacency'
+        graph_type (string): 'SBM', 'small_world', 'fuse_edges', and 'adjacency'
         N (int): Number of nodes
-        graphOptions (dict): Depends on the type selected.
+        graph_options (dict): Depends on the type selected.
         Obs.: More types to come.
         
     Output:
         W (np.array): adjacency matrix of shape N x N
     
     Optional inputs (by keyword):
-        graphType: 'SBM'
+        graph_type: 'SBM'
             'nCommunities': (int) number of communities
             'probIntra': (float) probability of drawing an edge between nodes
                 inside the same community
             'probInter': (float) probability of drawing an edge between nodes
                 of different communities
             Obs.: This always results in a connected graph.
-        graphType: 'SmallWorld'
+        graph_type: 'small_world'
             'probEdge': probability of drawing an edge between nodes
             'probRewiring': probability of rewiring an edge
             Obs.: This always results in a connected graph.
-        graphType: 'fuseEdges'
+        graph_type: 'fuse_edges'
             (Given a collection of adjacency matrices of graphs with the same
             number of nodes, this graph type is a fusion of the edges of the 
             collection of graphs, following different desirable properties)
             'adjacencyMatrices' (np.array): collection of matrices in a tensor
                 np.array of dimension nGraphs x N x N
-            'aggregationType' ('sum' or 'avg'): if 'sum', edges are summed
+            'aggregation_type' ('sum' or 'avg'): if 'sum', edges are summed
                 across the collection of matrices, if 'avg' they are averaged
-            'normalizationType' ('rows', 'cols' or 'no'): if 'rows', the values
+            'normalization_type' ('rows', 'cols' or 'no'): if 'rows', the values
                 of the rows (after aggregated) are normalized to sum to one, if
                 'cols', it is for the columns, if it is 'no' there is no 
                 normalization.
-            'isolatedNodes' (bool): if True, keep isolated nodes should there
+            'isolated_nodes' (bool): if True, keep isolated nodes should there
                 be any
-            'forceUndirected' (bool): if True, make the resulting graph 
+            'force_undirected' (bool): if True, make the resulting graph 
                 undirected by replacing directed edges by the average of the 
                 outgoing and incoming edges between each pair of nodes
-            'forceConnected' (bool): if True, make the graph connected by taking
+            'force_connected' (bool): if True, make the graph connected by taking
                 the largest connected component
-            'nodeList' (list): this is an empty list that, after calling the
+            'node_list' (list): this is an empty list that, after calling the
                 function, will contain a list of the nodes that were kept when
                 creating the adjacency matrix out of fusing the given ones with
                 the desired options
-            'extraComponents' (list, optional): if the resulting fused adjacency
-                matrix is not connected, and then forceConnected = True, then
+            'extra_components' (list, optional): if the resulting fused adjacency
+                matrix is not connected, and then force_connected = True, then
                 this list will contain two lists, the first one with the 
                 adjacency matrices of the smaller connected components, and
                 the second one a corresponding list with the index of the nodes
@@ -737,19 +737,19 @@ def createGraph(graphType, N, graphOptions):
             of the options in this function, then it can just be expanded to
             have one dimension along axis = 0 and fed to this function to
             obtain the corresponding graph with the desired properties)
-        graphType: 'adjacency'
+        graph_type: 'adjacency'
             'adjacencyMatrix' (np.array): just return the given adjacency
                 matrix (after checking it has N nodes)
     """
     # Check
     assert N >= 0
 
-    if graphType == 'SBM':
-        assert(len(graphOptions.keys())) == 3
-        C = graphOptions['nCommunities'] # Number of communities
+    if graph_type == 'SBM':
+        assert(len(graph_options.keys())) == 3
+        C = graph_options['nCommunities'] # Number of communities
         assert int(C) == C # Check that the number of communities is an integer
-        pii = graphOptions['probIntra'] # Intracommunity probability
-        pij = graphOptions['probInter'] # Intercommunity probability
+        pii = graph_options['probIntra'] # Intracommunity probability
+        pij = graph_options['probInter'] # Intercommunity probability
         assert 0 <= pii <= 1 # Check that they are valid probabilities
         assert 0 <= pij <= 1
         # We create the SBM as follows: we generate random numbers between
@@ -758,36 +758,36 @@ def createGraph(graphType, N, graphOptions):
         # zero.
         # Let's start by creating the matrix of pii and pij.
         # First, we need to know how many numbers on each community.
-        nNodesC = [N//C] * C # Number of nodes per community: floor division
+        n_nodes_c = [N//C] * C # Number of nodes per community: floor division
         c = 0 # counter for community
-        while sum(nNodesC) < N: # If there are still nodes to put in communities
+        while sum(n_nodes_c) < N: # If there are still nodes to put in communities
         # do it one for each (balanced communities)
-            nNodesC[c] = nNodesC[c] + 1
+            n_nodes_c[c] = n_nodes_c[c] + 1
             c += 1
-        # So now, the list nNodesC has how many nodes are on each community.
+        # So now, the list n_nodes_c has how many nodes are on each community.
         # We proceed to build the probability matrix.
         # We create a zero matrix
-        probMatrix = np.zeros([N,N])
+        prob_matrix = np.zeros([N,N])
         # And fill ones on the block diagonals following the number of nodes.
         # For this, we need the cumulative sum of the number of nodes
-        nNodesCIndex = [0] + np.cumsum(nNodesC).tolist()
+        n_nodes_c_index = [0] + np.cumsum(n_nodes_c).tolist()
         # The zero is added because it is the first index
         for c in range(C):
-            probMatrix[ nNodesCIndex[c] : nNodesCIndex[c+1] , \
-                        nNodesCIndex[c] : nNodesCIndex[c+1] ] = \
-                np.ones([nNodesC[c], nNodesC[c]])
-        # The matrix probMatrix has one in the block diagonal, which should
+            prob_matrix[ n_nodes_c_index[c] : n_nodes_c_index[c+1] , \
+                        n_nodes_c_index[c] : n_nodes_c_index[c+1] ] = \
+                np.ones([n_nodes_c[c], n_nodes_c[c]])
+        # The matrix prob_matrix has one in the block diagonal, which should
         # have probabilities p_ii and 0 in the offdiagonal that should have
         # probabilities p_ij. So that
-        probMatrix = pii * probMatrix + pij * (1 - probMatrix)
+        prob_matrix = pii * prob_matrix + pij * (1 - prob_matrix)
         # has pii in the intracommunity blocks and pij in the intercommunity
         # blocks.
         # Now we're finally ready to generate a connected graph
-        connectedGraph = False
-        while not connectedGraph:
+        connected_graph = False
+        while not connected_graph:
             # Generate random matrix
             W = np.random.rand(N,N)
-            W = (W < probMatrix).astype(np.float64)
+            W = (W < prob_matrix).astype(np.float64)
             # This matrix will have a 1 if the element ij is less or equal than
             # p_ij, so that if p_ij = 0.8, then it will be 1 80% of the times
             # (on average).
@@ -797,44 +797,44 @@ def createGraph(graphType, N, graphOptions):
             # And add it to the lower triangular part
             W = W + W.T
             # Now let's check that it is connected
-            connectedGraph = isConnected(W)
-    elif graphType == 'SmallWorld':
+            connected_graph = is_connected(W)
+    elif graph_type == 'small_world':
         # Function provided by Tuomo Mäki-Marttunen
         # Connectedness introduced by Dr. S. Segarra.
         # Adapted to numpy by Fernando Gama.
-        p = graphOptions['probEdge'] # Edge probability
-        q = graphOptions['probRewiring'] # Rewiring probability
+        p = graph_options['probEdge'] # Edge probability
+        q = graph_options['probRewiring'] # Rewiring probability
         # Positions on a circle
-        posX = np.cos(2*np.pi*np.arange(0,N)/N).reshape([N,1]) # x axis
-        posY = np.sin(2*np.pi*np.arange(0,N)/N).reshape([N,1]) # y axis
-        pos = np.concatenate((posX, posY), axis = 1) # N x 2 position matrix
-        connectedGraph = False
+        pos_x = np.cos(2*np.pi*np.arange(0,N)/N).reshape([N,1]) # x axis
+        pos_y = np.sin(2*np.pi*np.arange(0,N)/N).reshape([N,1]) # y axis
+        pos = np.concatenate((pos_x, pos_y), axis = 1) # N x 2 position matrix
+        connected_graph = False
         W = np.zeros([N,N], dtype = pos.dtype) # Empty adjacency matrix
         D = sp.distance.squareform(sp.distance.pdist(pos)) ** 2 # Squared
             # distance matrix
         
-        while not connectedGraph:
+        while not connected_graph:
             # 1. The generation of locally connected network with given
             # in-degree:
             for n in range(N): # Go through all nodes in order
                 nn = np.random.binomial(N, p)
                 # Possible inputs are all but the node itself:
                 pind = np.concatenate((np.arange(0,n), np.arange(n+1, N)))
-                sortedIndices = np.argsort(D[n,pind])
-                dists = D[n,pind[sortedIndices]]
+                sorted_indices = np.argsort(D[n,pind])
+                dists = D[n,pind[sorted_indices]]
                 inds_equallyfar = np.nonzero(dists == dists[nn])[0]
                 if len(inds_equallyfar) == 1: # if a unique farthest node to
                         # be chosen as input
-                    W[pind[sortedIndices[0:nn]],n] = 1 # choose as inputs all
+                    W[pind[sorted_indices[0:nn]],n] = 1 # choose as inputs all
                         # from closest to the farthest-to-be-chosen
                 else:
-                    W[pind[sortedIndices[0:np.min(inds_equallyfar)]],n] = 1
+                    W[pind[sorted_indices[0:np.min(inds_equallyfar)]],n] = 1
                         # choose each nearer than farthest-to-be-chosen
                     r=np.random.permutation(len(inds_equallyfar)).astype(np.int)
                         # choose randomly between the ones that are as far as 
                         # be-chosen
                         
-                    W[pind[sortedIndices[np.min(inds_equallyfar)\
+                    W[pind[sorted_indices[np.min(inds_equallyfar)\
                                     +r[0:nn-np.min(inds_equallyfar)+1]]],n] = 1;
             # 2. Watts-Strogatz perturbation:
             for n in range(N):
@@ -855,8 +855,8 @@ def createGraph(graphType, N, graphOptions):
             W = np.triu(W)
             W = W + W.T
             # Check that graph is connected
-            connectedGraph = isConnected(W)
-    elif graphType == 'fuseEdges':
+            connected_graph = is_connected(W)
+    elif graph_type == 'fuse_edges':
         # This alternative assumes that there are multiple graphs that have to
         # be fused into one.
         # This will be done in two ways: average or sum.
@@ -866,130 +866,130 @@ def createGraph(graphType, N, graphOptions):
         # features that we want to fuse.
         # Argument N is ignored
         # Data
-        assert 7 <= len(graphOptions.keys()) <= 8
-        W = graphOptions['adjacencyMatrices'] # Data in format E x N x N
+        assert 7 <= len(graph_options.keys()) <= 8
+        W = graph_options['adjacencyMatrices'] # Data in format E x N x N
         assert len(W.shape) == 3
         N = W.shape[1] # Number of nodes
         assert W.shape[1] == W.shape[2]
         # Name the list with all nodes to keep
-        nodeList = graphOptions['nodeList'] # This should be an empty list
+        node_list = graph_options['node_list'] # This should be an empty list
         # If there is an 8th argument, this is where we are going to save the
         # extra components which are not the largest
-        if len(graphOptions.keys()) == 8:
-            logExtraComponents = True
-            extraComponents = graphOptions['extraComponents']
+        if len(graph_options.keys()) == 8:
+            log_extra_components = True
+            extra_components = graph_options['extra_components']
             # This will be a list with two elements, the first elements will be
             # the adjacency matrix of the other (smaller) components, whereas
             # the second elements will be a list of the same size, where each
             # elements is yet another list of nodes to keep from the original 
-            # graph to build such an adjacency matrix (akin to nodeList)
+            # graph to build such an adjacency matrix (akin to node_list)
         else:
-            logExtraComponents = False # Flag to know if we need to log the
+            log_extra_components = False # Flag to know if we need to log the
             # extra components or not
-        allNodes = np.arange(N)
+        all_nodes = np.arange(N)
         # What type of node aggregation
-        aggregationType = graphOptions['aggregationType']
-        assert aggregationType == 'sum' or aggregationType == 'avg'
-        if aggregationType == 'sum':
+        aggregation_type = graph_options['aggregation_type']
+        assert aggregation_type == 'sum' or aggregation_type == 'avg'
+        if aggregation_type == 'sum':
             W = np.sum(W, axis = 0)
-        elif aggregationType == 'avg':
+        elif aggregation_type == 'avg':
             W = np.mean(W, axis = 0)
         # Normalization (sum of rows or columns is equal to 1)
-        normalizationType = graphOptions['normalizationType']
-        if normalizationType == 'rows':
-            rowSum = np.sum(W, axis = 1).reshape([N, 1])
-            rowSum[np.abs(rowSum) < zeroTolerance] = 1.
-            W = W/np.tile(rowSum, [1, N])
-        elif normalizationType == 'cols':
-            colSum = np.sum(W, axis = 0).reshape([1, N])
-            colSum[np.abs(colSum) < zeroTolerance] = 1.
-            W = W/np.tile(colSum, [N, 1])
+        normalization_type = graph_options['normalization_type']
+        if normalization_type == 'rows':
+            row_sum = np.sum(W, axis = 1).reshape([N, 1])
+            row_sum[np.abs(row_sum) < zero_tolerance] = 1.
+            W = W/np.tile(row_sum, [1, N])
+        elif normalization_type == 'cols':
+            col_sum = np.sum(W, axis = 0).reshape([1, N])
+            col_sum[np.abs(col_sum) < zero_tolerance] = 1.
+            W = W/np.tile(col_sum, [N, 1])
         # Discarding isolated nodes
-        isolatedNodes = graphOptions['isolatedNodes'] # if True, isolated nodes
+        isolated_nodes = graph_options['isolated_nodes'] # if True, isolated nodes
             # are allowed, if not, discard them
-        if isolatedNodes == False:
+        if isolated_nodes == False:
             # A Node is isolated when it's degree is zero
-            degVector = np.sum(np.abs(W), axis = 0)
+            deg_vector = np.sum(np.abs(W), axis = 0)
             # Keep nodes whose degree is not zero
-            keepNodes = np.nonzero(degVector > zeroTolerance)
+            keep_nodes = np.nonzero(deg_vector > zero_tolerance)
             # Get the first element of the output tuple, for some reason if
-            # we take keepNodes, _ as the output it says it cannot unpack it.
-            keepNodes = keepNodes[0]
-            if len(keepNodes) < N:
-                W = W[keepNodes][:, keepNodes]
+            # we take keep_nodes, _ as the output it says it cannot unpack it.
+            keep_nodes = keep_nodes[0]
+            if len(keep_nodes) < N:
+                W = W[keep_nodes][:, keep_nodes]
                 # Update the nodes kept
-                allNodes = allNodes[keepNodes]
+                all_nodes = all_nodes[keep_nodes]
         # Check if we need to make it undirected or not
-        forceUndirected = graphOptions['forceUndirected'] # if True, make it
+        force_undirected = graph_options['force_undirected'] # if True, make it
             # undirected by using the average between nodes (careful, some 
             # edges might cancel)
-        if forceUndirected == True:
+        if force_undirected == True:
             W = 0.5 * (W + W.T)
         # Finally, making it a connected graph
-        forceConnected = graphOptions['forceConnected'] # if True, make the
+        force_connected = graph_options['force_connected'] # if True, make the
             # graph connected
-        if forceConnected == True:
+        if force_connected == True:
             # Check if the given graph is already connected
-            connectedFlag = isConnected(W)
+            connected_flag = is_connected(W)
             # If it is not connected
-            if not connectedFlag:
+            if not connected_flag:
                 # Find all connected components
-                nComponents, nodeLabels = \
+                n_components, node_labels = \
                                     scipy.sparse.csgraph.connected_components(W)          
                 # Now, we have to pick the connected component with the largest
                 # number of nodes, because that's the one to output.
                 # Momentarily store the rest.
                 # Let's get the list of nodes we have so far
-                partialNodes = np.arange(W.shape[0])
+                partial_nodes = np.arange(W.shape[0])
                 # Create the lists to store the adjacency matrices and
                 # the official lists of nodes to keep
-                eachAdjacency = [None] * nComponents
-                eachNodeList = [None] * nComponents
+                each_adjacency = [None] * n_components
+                each_node_list = [None] * n_components
                 # And we want to keep the one with largest number of nodes, but
                 # we will do only one for, so we need to be checking which one
                 # is, so we will compare against the maximum number of nodes
                 # registered so far
-                nNodesMax = 0 # To start
-                for l in range(nComponents):
+                n_nodes_max = 0 # To start
+                for l in range(n_components):
                     # Find the nodes belonging to the lth connected component
-                    thisNodesToKeep = partialNodes[nodeLabels == l]
+                    this_nodes_to_keep = partial_nodes[node_labels == l]
                     # This adjacency matrix
-                    eachAdjacency[l] = W[thisNodesToKeep][:, thisNodesToKeep]
+                    each_adjacency[l] = W[this_nodes_to_keep][:, this_nodes_to_keep]
                     # The actual list
-                    eachNodeList[l] = allNodes[thisNodesToKeep]
+                    each_node_list[l] = all_nodes[this_nodes_to_keep]
                     # Check the number of nodes
-                    thisNumberOfNodes = len(thisNodesToKeep)
+                    this_number_of_nodes = len(this_nodes_to_keep)
                     # And see if this is the largest
-                    if thisNumberOfNodes > nNodesMax:
+                    if this_number_of_nodes > n_nodes_max:
                         # Store the new number of maximum nodes
-                        nNodesMax = thisNumberOfNodes
+                        n_nodes_max = this_number_of_nodes
                         # Store the element of the list that satisfies it
-                        indexLargestComponent = l
+                        index_largest_component = l
                 # Once we have been over all the connected components, just
                 # output the one with largest number of nodes
-                W = eachAdjacency.pop(indexLargestComponent)
-                allNodes = eachNodeList.pop(indexLargestComponent)
+                W = each_adjacency.pop(index_largest_component)
+                all_nodes = each_node_list.pop(index_largest_component)
                 # Check that it is effectively connected
-                assert isConnected(W)
+                assert is_connected(W)
                 # And, if we have the extra argument, return all the other
                 # connected components
-                if logExtraComponents == True:
-                    extraComponents.append(eachAdjacency)
-                    extraComponents.append(eachNodeList)
+                if log_extra_components == True:
+                    extra_components.append(each_adjacency)
+                    extra_components.append(each_node_list)
         # To end, update the node list, so that it is returned through argument
-        nodeList.extend(allNodes.tolist())
-    elif graphType == 'adjacency':
-        assert 'adjacencyMatrix' in graphOptions.keys()
-        W = graphOptions['adjacencyMatrix']
+        node_list.extend(all_nodes.tolist())
+    elif graph_type == 'adjacency':
+        assert 'adjacencyMatrix' in graph_options.keys()
+        W = graph_options['adjacencyMatrix']
         assert W.shape[0] == W.shape[1] == N
             
     return W
 
 # Permutation functions
 
-def permIdentity(S):
+def perm_identity(S):
     """
-    permIdentity: determines the identity permnutation
+    perm_identity: determines the identity permnutation
 
     Input:
         S (np.array): matrix
@@ -1003,23 +1003,23 @@ def permIdentity(S):
     if len(S.shape) == 2:
         assert S.shape[0] == S.shape[1]
         S = S.reshape([1, S.shape[0], S.shape[1]])
-        scalarWeights = True
+        scalar_weights = True
     else:
         assert S.shape[1] == S.shape[2]
-        scalarWeights = False
+        scalar_weights = False
     # Number of nodes
     N = S.shape[1]
     # Identity order
     order = np.arange(N)
-    # If the original GSO assumed scalar weights, get rid of the extra dimension
-    if scalarWeights:
+    # If the original GSO assumed scalar weights, get r_id of the extra dimension
+    if scalar_weights:
         S = S.reshape([N, N])
 
     return S, order.tolist()
 
-def permDegree(S):
+def perm_degree(S):
     """
-    permDegree: determines the permutation by degree (nodes ordered from highest
+    perm_degree: determines the permutation by degree (nodes ordered from highest
         degree to lowest)
 
     Input:
@@ -1033,10 +1033,10 @@ def permDegree(S):
     if len(S.shape) == 2:
         assert S.shape[0] == S.shape[1]
         S = S.reshape([1, S.shape[0], S.shape[1]])
-        scalarWeights = True
+        scalar_weights = True
     else:
         assert S.shape[1] == S.shape[2]
-        scalarWeights = False
+        scalar_weights = False
     # Compute the degree
     d = np.sum(np.sum(S, axis = 1), axis = 0)
     # Sort ascending order (from min degree to max degree)
@@ -1045,15 +1045,15 @@ def permDegree(S):
     order = np.flip(order,0)
     # And update S
     S = S[:,order,:][:,:,order]
-    # If the original GSO assumed scalar weights, get rid of the extra dimension
-    if scalarWeights:
+    # If the original GSO assumed scalar weights, get r_id of the extra dimension
+    if scalar_weights:
         S = S.reshape([S.shape[1], S.shape[2]])
 
     return S, order.tolist()
 
-def permSpectralProxies(S):
+def perm_spectral_proxies(S):
     """
-    permSpectralProxies: determines the permutation by the spectral proxies
+    perm_spectral_proxies: determines the permutation by the spectral proxies
         score (from highest to lowest)
 
     Input:
@@ -1074,20 +1074,20 @@ def permSpectralProxies(S):
     # If it is a matrix, just use it
     if len(S.shape) == 2:
         assert S.shape[0] == S.shape[1]
-        scalarWeights = True
-        simpleS = S.copy()
+        scalar_weights = True
+        simple_s = S.copy()
     # If it is a tensor of shape E x N x N, average over dimension E.
     else:
         assert S.shape[1] == S.shape[2]
-        scalarWeights = False
+        scalar_weights = False
         # Average over dimension E
-        simpleS = np.mean(S, axis = 0)
+        simple_s = np.mean(S, axis = 0)
 
-    N = simpleS.shape[0] # Number of nodes
-    ST = simpleS.conj().T # Transpose of S, needed for the method
-    Sk = np.linalg.matrix_power(simpleS,k) # S^k
-    STk = np.linalg.matrix_power(ST,k) # (S^T)^k
-    STkSk = STk @ Sk # (S^T)^k * S^k, needed for the method
+    N = simple_s.shape[0] # Number of nodes
+    ST = simple_s.conj().T # Transpose of S, needed for the method
+    sk = np.linalg.matrix_power(simple_s,k) # S^k
+    s_tk = np.linalg.matrix_power(ST,k) # (S^T)^k
+    s_tk_sk = s_tk @ sk # (S^T)^k * S^k, needed for the method
 
     nodes = [] # Where to save the nodes, order according the criteria
     it = 1
@@ -1095,25 +1095,25 @@ def permSpectralProxies(S):
     # selection of nodes, instead of just ordering
 
     while len(nodes) < M:
-        remainingNodes = [n for n in range(N) if n not in nodes]
+        remaining_nodes = [n for n in range(N) if n not in nodes]
         # Computes the eigenvalue decomposition
         phi_eig, phi_ast_k = np.linalg.eig(
-                STkSk[remainingNodes][:,remainingNodes])
+                s_tk_sk[remaining_nodes][:,remaining_nodes])
         phi_ast_k = phi_ast_k[:][:,np.argmin(phi_eig.real)]
         abs_phi_ast_k_2 = np.square(np.absolute(phi_ast_k))
-        newNodePos = np.argmax(abs_phi_ast_k_2)
-        nodes.append(remainingNodes[newNodePos])
+        new_node_pos = np.argmax(abs_phi_ast_k_2)
+        nodes.append(remaining_nodes[new_node_pos])
         it += 1
 
-    if scalarWeights:
+    if scalar_weights:
         S = S[nodes,:][:,nodes]
     else:
         S = S[:,nodes,:][:,:,nodes]
     return S, nodes
 
-def permEDS(S):
+def perm_eds(S):
     """
-    permEDS: determines the permutation by the experimentally designed sampling
+    perm_eds: determines the permutation by the experimentally designed sampling
         score (from highest to lowest)
 
     Input:
@@ -1131,16 +1131,16 @@ def permEDS(S):
     # If it is a matrix, just use it
     if len(S.shape) == 2:
         assert S.shape[0] == S.shape[1]
-        scalarWeights = True
-        simpleS = S.copy()
+        scalar_weights = True
+        simple_s = S.copy()
     # If it is a tensor of shape E x N x N, average over dimension E.
     else:
         assert S.shape[1] == S.shape[2]
-        scalarWeights = False
+        scalar_weights = False
         # Average over dimension E
-        simpleS = np.mean(S, axis = 0)
+        simple_s = np.mean(S, axis = 0)
 
-    E, V = np.linalg.eig(simpleS) # Eigendecomposition of S
+    E, V = np.linalg.eig(simple_s) # Eigendecomposition of S
     kappa = np.max(np.absolute(V), axis=1)
 
     kappa2 = np.square(kappa) # The probabilities assigned to each node are
@@ -1153,16 +1153,16 @@ def permEDS(S):
     # Reverse sorting
     order = np.flip(order,0)
 
-    if scalarWeights:
+    if scalar_weights:
         S = S[order,:][:,order]
     else:
         S = S[:,order,:][:,:,order]
 
     return S, order.tolist()
 
-def edgeFailSampling(W, p):
+def edge_fail_sampling(W, p):
     """
-    edgeFailSampling: randomly delete the edges of a given graph
+    edge_fail_sampling: randomly delete the edges of a given graph
     
     Input:
         W (np.array): adjacency matrix
@@ -1177,12 +1177,12 @@ def edgeFailSampling(W, p):
     assert 0 <= p <= 1
     N = W.shape[0]
     assert W.shape[1] == N
-    undirected = np.allclose(W, W.T, atol = zeroTolerance)
+    undirected = np.allclose(W, W.T, atol = zero_tolerance)
     
-    maskEdges = np.random.rand(N, N)
-    maskEdges = (maskEdges > p).astype(W.dtype) # Put a 1 with probability 1-p
+    mask_edges = np.random.rand(N, N)
+    mask_edges = (mask_edges > p).astype(W.dtype) # Put a 1 with probability 1-p
     
-    W = maskEdges * W
+    W = mask_edges * W
     if undirected:
         W = np.triu(W)
         W = W + W.T
@@ -1196,10 +1196,10 @@ class Graph():
 
     Initialization:
 
-        graphType (string): 'SBM', 'SmallWorld', 'fuseEdges', and 'adjacency'
+        graph_type (string): 'SBM', 'small_world', 'fuse_edges', and 'adjacency'
         N (int): number of nodes
         [optionalArguments]: related to the specific type of graph; see
-            createGraph() for details.
+            create_graph() for details.
 
     Attributes:
 
@@ -1227,27 +1227,27 @@ class Graph():
         Inputs:
             S (np.array): new GSO matrix (has to have the same number of nodes),
                 updates attribute .S
-            GFT ('no', 'increasing' or 'totalVariation'): order of
+            GFT ('no', 'increasing' or 'total_variation'): order of
                 eigendecomposition; if 'no', no eigendecomposition is made, and
                 the attributes .V and .E are set to None
     """
     # in this class we provide, easily as attributes, the basic notions of
     # a graph. This serve as a building block for more complex notions as well.
-    def __init__(self, graphType, N, graphOptions):
+    def __init__(self, graph_type, N, graph_options):
         assert N > 0
         #\\\ Create the graph (Outputs adjacency matrix):
-        self.W = createGraph(graphType, N, graphOptions)
+        self.W = create_graph(graph_type, N, graph_options)
         # TODO: Let's start easy: make it just an N x N matrix. We'll see later
         # the rest of the things just as handling multiple features and stuff.
         #\\\ Number of nodes:
         self.N = (self.W).shape[0]
         #\\\ Bool for graph being undirected:
-        self.undirected = np.allclose(self.W, (self.W).T, atol = zeroTolerance)
+        self.undirected = np.allclose(self.W, (self.W).T, atol = zero_tolerance)
         #   np.allclose() gives true if matrices W and W.T are the same up to
         #   atol.
         #\\\ Bool for graph having self-loops:
-        self.selfLoops = True \
-                        if np.sum(np.abs(np.diag(self.W)) > zeroTolerance) > 0 \
+        self.self_loops = True \
+                        if np.sum(np.abs(np.diag(self.W)) > zero_tolerance) > 0 \
                         else False
         #\\\ Degree matrix:
         self.D = np.diag(np.sum(self.W, axis = 1))
@@ -1258,8 +1258,8 @@ class Graph():
         self.A = (np.abs(self.W) > 0).astype(self.W.dtype)
         #\\\ Laplacian matrix:
         #   Only if the graph is undirected and has no self-loops
-        if self.undirected and not self.selfLoops:
-            self.L = adjacencyToLaplacian(self.W)
+        if self.undirected and not self.self_loops:
+            self.L = adjacency_to_laplacian(self.W)
         else:
             self.L = None
         #\\\ GSO (Graph Shift Operator):
@@ -1270,28 +1270,28 @@ class Graph():
         self.E = None # Eigenvalues
         self.V = None # Eigenvectors
     
-    def computeGFT(self):
+    def compute_gft(self):
         # Compute the GFT of the stored GSO
         if self.S is not None:
             #\\ GFT:
             #   Compute the eigenvalues (E) and eigenvectors (V)
-            self.E, self.V = computeGFT(self.S, order = 'totalVariation')
+            self.E, self.V = compute_gft(self.S, order = 'total_variation')
 
-    def setGSO(self, S, GFT = 'no'):
+    def set_gso(self, S, GFT = 'no'):
         # This simply sets a matrix as a new GSO. It has to have the same number
         # of nodes (otherwise, it's a different graph!) and it can or cannot
         # compute the GFT, depending on the options for GFT
         assert S.shape[0] == S.shape[1] == self.N
-        assert GFT == 'no' or GFT == 'increasing' or GFT == 'totalVariation'
+        assert GFT == 'no' or GFT == 'increasing' or GFT == 'total_variation'
         # Set the new GSO
         self.S = S
         if GFT == 'no':
             self.E = None
             self.V = None
         else:
-            self.E, self.V = computeGFT(self.S, order = GFT)
+            self.E, self.V = compute_gft(self.S, order = GFT)
 
-def splineBasis(K, x, degree=3):
+def spline_basis(K, x, degree=3):
     # Function written by M. Defferrard, taken verbatim (except for function
     # name), from 
     # https://github.com/mdeff/cnn_graph/blob/master/lib/models.py#L662
@@ -1365,7 +1365,7 @@ def coarsen(A, levels, self_connections=False):
 
     return graphs, perms[0] if levels > 0 else None
 
-def metis(W, levels, rid=None):
+def metis(W, levels, r_id=None):
     # Function written by M. Defferrard, taken verbatim, from 
     # https://github.com/mdeff/cnn_graph/blob/master/lib/coarsening.py#L34
     """
@@ -1387,8 +1387,8 @@ def metis(W, levels, rid=None):
     """
 
     N, N = W.shape
-    if rid is None:
-        rid = np.random.permutation(range(N))
+    if r_id is None:
+        r_id = np.random.permutation(range(N))
     parents = []
     degree = W.sum(axis=0) - W.diagonal()
     graphs = []
@@ -1414,7 +1414,7 @@ def metis(W, levels, rid=None):
         rr = idx_row[perm]
         cc = idx_col[perm]
         vv = val[perm]
-        cluster_id = metis_one_level(rr,cc,vv,rid,weights)  # rr is ordered
+        cluster_id = metis_one_level(rr,cc,vv,r_id,weights)  # rr is ordered
         parents.append(cluster_id)
 
         # TO DO
@@ -1429,9 +1429,9 @@ def metis(W, levels, rid=None):
         nrr = cluster_id[rr]
         ncc = cluster_id[cc]
         nvv = vv
-        Nnew = cluster_id.max() + 1
+        n_new = cluster_id.max() + 1
         # CSR is more appropriate: row,val pairs appear multiple times
-        W = scipy.sparse.csr_matrix((nvv,(nrr,ncc)), shape=(Nnew,Nnew))
+        W = scipy.sparse.csr_matrix((nvv,(nrr,ncc)), shape=(n_new,n_new))
         W.eliminate_zeros()
         # Add new graph to the list of all coarsened graphs
         graphs.append(W)
@@ -1442,16 +1442,16 @@ def metis(W, levels, rid=None):
         #degree = W.sum(axis=0) - W.diagonal()
 
         # CHOOSE THE ORDER IN WHICH VERTICES WILL BE VISTED AT THE NEXT PASS
-        #[~, rid]=sort(ss);     # arthur strategy
-        #[~, rid]=sort(supernode_size);    #  thomas strategy
-        #rid=randperm(N);                  #  metis/graclus strategy
+        #[~, r_id]=sort(ss);     # arthur strategy
+        #[~, r_id]=sort(supernode_size);    #  thomas strategy
+        #r_id=randperm(N);                  #  metis/graclus strategy
         ss = np.array(W.sum(axis=0)).squeeze()
-        rid = np.argsort(ss)
+        r_id = np.argsort(ss)
 
     return graphs, parents
 
 # Coarsen a graph given by rr,cc,vv.  rr is assumed to be ordered
-def metis_one_level(rr,cc,vv,rid,weights):
+def metis_one_level(rr,cc,vv,r_id,weights):
     # Function written by M. Defferrard, taken verbatim, from 
     # https://github.com/mdeff/cnn_graph/blob/master/lib/coarsening.py#L119
 
@@ -1459,45 +1459,45 @@ def metis_one_level(rr,cc,vv,rid,weights):
     N = rr[nnz-1] + 1
 
     marked = np.zeros(N, np.bool)
-    rowstart = np.zeros(N, np.int32)
-    rowlength = np.zeros(N, np.int32)
+    row_start = np.zeros(N, np.int32)
+    row_length = np.zeros(N, np.int32)
     cluster_id = np.zeros(N, np.int32)
 
-    oldval = rr[0]
+    old_val = rr[0]
     count = 0
-    clustercount = 0
+    cluster_count = 0
 
     for ii in range(nnz):
-        rowlength[count] = rowlength[count] + 1
-        if rr[ii] > oldval:
-            oldval = rr[ii]
-            rowstart[count+1] = ii
+        row_length[count] = row_length[count] + 1
+        if rr[ii] > old_val:
+            old_val = rr[ii]
+            row_start[count+1] = ii
             count = count + 1
 
     for ii in range(N):
-        tid = rid[ii]
-        if not marked[tid]:
-            wmax = 0.0
-            rs = rowstart[tid]
-            marked[tid] = True
-            bestneighbor = -1
-            for jj in range(rowlength[tid]):
-                nid = cc[rs+jj]
-                if marked[nid]:
-                    tval = 0.0
+        t_id = r_id[ii]
+        if not marked[t_id]:
+            w_max = 0.0
+            rs = row_start[t_id]
+            marked[t_id] = True
+            best_neighbor = -1
+            for jj in range(row_length[t_id]):
+                n_id = cc[rs+jj]
+                if marked[n_id]:
+                    t_val = 0.0
                 else:
-                    tval = vv[rs+jj] * (1.0/weights[tid] + 1.0/weights[nid])
-                if tval > wmax:
-                    wmax = tval
-                    bestneighbor = nid
+                    t_val = vv[rs+jj] * (1.0/weights[t_id] + 1.0/weights[n_id])
+                if t_val > w_max:
+                    w_max = t_val
+                    best_neighbor = n_id
 
-            cluster_id[tid] = clustercount
+            cluster_id[t_id] = cluster_count
 
-            if bestneighbor > -1:
-                cluster_id[bestneighbor] = clustercount
-                marked[bestneighbor] = True
+            if best_neighbor > -1:
+                cluster_id[best_neighbor] = cluster_count
+                marked[best_neighbor] = True
 
-            clustercount += 1
+            cluster_count += 1
 
     return cluster_id
 
@@ -1512,8 +1512,8 @@ def compute_perm(parents):
     # Order of last layer is random (chosen by the clustering algorithm).
     indices = []
     if len(parents) > 0:
-        M_last = max(parents[-1]) + 1
-        indices.append(list(range(M_last)))
+        m_last = max(parents[-1]) + 1
+        indices.append(list(range(m_last)))
 
     for parent in parents[::-1]:
         #print('parent: {}'.format(parent))
@@ -1544,7 +1544,7 @@ def compute_perm(parents):
 
     # Sanity checks.
     for i,indices_layer in enumerate(indices):
-        M = M_last*2**i
+        M = m_last*2**i
         # Reduction by 2 at each layer (binary tree).
         assert len(indices[0] == M)
         # The new ordering does not omit an indice.
@@ -1563,14 +1563,14 @@ def perm_adjacency(A, indices):
         return A
 
     M, M = A.shape
-    Mnew = len(indices)
-    assert Mnew >= M
+    m_new = len(indices)
+    assert m_new >= M
     A = A.tocoo()
 
-    # Add Mnew - M isolated vertices.
-    if Mnew > M:
-        rows = scipy.sparse.coo_matrix((Mnew-M,    M), dtype=np.float32)
-        cols = scipy.sparse.coo_matrix((Mnew, Mnew-M), dtype=np.float32)
+    # Add m_new - M isolated vertices.
+    if m_new > M:
+        rows = scipy.sparse.coo_matrix((m_new-M,    M), dtype=np.float32)
+        cols = scipy.sparse.coo_matrix((m_new, m_new-M), dtype=np.float32)
         A = scipy.sparse.vstack([A, rows])
         A = scipy.sparse.hstack([A, cols])
 
@@ -1583,7 +1583,7 @@ def perm_adjacency(A, indices):
     assert type(A) is scipy.sparse.coo.coo_matrix
     return A
 
-def permCoarsening(x, indices):
+def perm_coarsening(x, indices):
     # Original function written by M. Defferrard, found in
     # https://github.com/mdeff/cnn_graph/blob/master/lib/coarsening.py#L219
     # Function name has been changed, and it has been further adapted to handle
@@ -1599,16 +1599,16 @@ def permCoarsening(x, indices):
         return x
 
     B, F, N = x.shape
-    Nnew = len(indices)
-    assert Nnew >= N
-    xnew = np.empty((B, F, Nnew))
+    n_new = len(indices)
+    assert n_new >= N
+    x_new = np.empty((B, F, n_new))
     for i,j in enumerate(indices):
         # Existing vertex, i.e. real data.
         if j < N:
-            xnew[:,:,i] = x[:,:,j]
+            x_new[:,:,i] = x[:,:,j]
         # Fake vertex because of singeltons.
         # They will stay 0 so that max pooling chooses the singelton.
         # Or -infty ?
         else:
-            xnew[:,:,i] = np.zeros([B, F])
-    return xnew
+            x_new[:,:,i] = np.zeros([B, F])
+    return x_new
