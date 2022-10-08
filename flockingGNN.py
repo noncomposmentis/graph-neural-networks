@@ -32,9 +32,6 @@
 #####################################################################
 
 # \\\ Standard libraries:
-import os
-import numpy as np
-import matplotlib
 # \\\ Standard libraries:
 import os
 
@@ -180,7 +177,7 @@ beta_2 = 0.999  # ADAM option only
 loss_function = nn.MSELoss
 
 # \\\ Training algorithm
-trainer = training.trainer_flocking
+trainer = training.TrainerFlocking
 
 # \\\ Evaluation algorithm
 evaluator = evaluation.evaluate_flocking
@@ -239,10 +236,10 @@ nonlinearity_output = torch.tanh
 nonlinearity = nn.Tanh  # Chosen nonlinearity for nonlinear architectures
 
 # Select desired architectures
-do_local_flt = True  # Local filter (no nonlinearity)
-do_local_gnn = True  # Local GNN (include nonlinearity)
+do_local_flt = False  # Local filter (no nonlinearity)
+do_local_gnn = False  # Local GNN (include nonlinearity)
 do_dl_agg_gnn = True
-do_graph_rnn = True
+do_graph_rnn = False
 
 model_list = []
 
@@ -325,37 +322,37 @@ if do_local_gnn:
 if do_dl_agg_gnn:
     # \\\ Basic parameters for the Aggregation GNN architecture
 
-    h_params_dagnn1_ly = {}  # Hyperparameters (hParams) for the Local GNN (LclGNN)
+    h_params_DAGNN1Ly = {}  # Hyperparameters (hParams) for the Local GNN (LclGNN)
 
-    h_params_dagnn1_ly['name'] = 'DAGNN1Ly'
+    h_params_DAGNN1Ly['name'] = 'DAGNN1Ly'
     # Chosen architecture
-    h_params_dagnn1_ly['archit'] = architTime.AggregationGNN_DB
-    h_params_dagnn1_ly['device'] = 'cuda:0' \
+    h_params_DAGNN1Ly['archit'] = architTime.AggregationGNN_DB
+    h_params_DAGNN1Ly['device'] = 'cuda:0' \
         if (use_gpu and torch.cuda.is_available()) \
         else 'cpu'
 
     # Graph convolutional parameters
-    h_params_dagnn1_ly['dim_features'] = [6]  # Features per layer
-    h_params_dagnn1_ly['n_filter_taps'] = []  # Number of filter taps
-    h_params_dagnn1_ly['bias'] = True  # Decide whether to include a bias term
+    h_params_DAGNN1Ly['dim_features'] = [6]  # Features per layer
+    h_params_DAGNN1Ly['n_filter_taps'] = []  # Number of filter taps
+    h_params_DAGNN1Ly['bias'] = True  # Decide whether to include a bias term
     # Nonlinearity
-    h_params_dagnn1_ly['nonlinearity'] = nonlinearity  # Selected nonlinearity
+    h_params_DAGNN1Ly['nonlinearity'] = nonlinearity  # Selected nonlinearity
     # is affected by the summary
-    h_params_dagnn1_ly['pooling_function'] = gml.NoPool
-    h_params_dagnn1_ly['pooling_size'] = []
+    h_params_DAGNN1Ly['pooling_function'] = gml.NoPool
+    h_params_DAGNN1Ly['pooling_size'] = []
     # Readout layer: local linear combination of features
-    h_params_dagnn1_ly['dim_readout'] = [64, 2]  # Dimension of the fully connected
+    h_params_DAGNN1Ly['dim_readout'] = [64, 2]  # Dimension of the fully connected
     # layers after the GCN layers (map); this fully connected layer
     # is applied only at each node, without any further exchanges nor
     # considering all nodes at once, making the architecture entirely
     # local.
     # Graph structure
-    h_params_dagnn1_ly['dim_edge_features'] = 1  # Scalar edge weights
-    h_params_dagnn1_ly['n_exchanges'] = 2 - 1
+    h_params_DAGNN1Ly['dim_edge_features'] = 1  # Scalar edge weights
+    h_params_DAGNN1Ly['n_exchanges'] = 2 - 1
 
     # \\\ Save Values:
-    write_var_values(vars_file, h_params_dagnn1_ly)
-    model_list += [h_params_dagnn1_ly['name']]
+    write_var_values(vars_file, h_params_DAGNN1Ly)
+    model_list += [h_params_DAGNN1Ly['name']]
 
 # \\\\\\\\\\\\\\\\\
 # \\\ GRAPH RNN \\\
@@ -448,7 +445,7 @@ if use_gpu and torch.cuda.is_available():
 if do_print:
     print("Selected devices:")
     for this_model in model_list:
-        h_params_dict = eval('hParams' + this_model)
+        h_params_dict = eval('h_params_' + this_model)
         print("\t%s: %s" % (this_model, h_params_dict['device']))
 
 # \\\ Logging options
@@ -642,12 +639,12 @@ for realization in range(n_realizations):
         print("...", flush=True)
 
     # Generate the videos
-    data.saveVideo(dataset_train_trajectory_dir,  # Where to save them
-                   data.pos['train'],  # Which positions to plot
-                   n_videos,  # Number of videos to create
-                   commGraph=data.commGraph['train'],  # Graph to plot
-                   vel=data.vel['train'],  # Velocity arrows to plot
-                   videoSpeed=video_speed)  # Change speed of animation
+    data.save_video(dataset_train_trajectory_dir,  # Where to save them
+                    data.pos['train'],  # Which positions to plot
+                    n_videos,  # Number of videos to create
+                    comm_graph=data.comm_graph['train'],  # Graph to plot
+                    vel=data.vel['train'],  # Velocity arrows to plot
+                    video_speed=video_speed)  # Change speed of animation
 
     # %%##################################################################
     #                                                                   #
@@ -862,9 +859,9 @@ for realization in range(n_realizations):
         # Save videos for the optimal trajectories of the test set (before it
         # was for the otpimal trajectories of the training set)
 
-        pos_test = data_test.getData('pos', 'test')
-        vel_test = data_test.getData('vel', 'test')
-        comm_graph_test = data_test.getData('commGraph', 'test')
+        pos_test = data_test.get_data('pos', 'test')
+        vel_test = data_test.get_data('vel', 'test')
+        comm_graph_test = data_test.get_data('comm_graph', 'test')
 
         if do_print:
             print("[%3d Agents] Preview data" % n_agents_test[n], end='')
@@ -872,12 +869,12 @@ for realization in range(n_realizations):
                 print(" for realization %d" % realization, end='')
             print("...", flush=True)
 
-        data_test.saveVideo(dataset_test_agent_trajectory_dir[n],
-                            pos_test,
-                            n_videos,
-                            commGraph=comm_graph_test,
-                            vel=vel_test,
-                            videoSpeed=video_speed)
+        data_test.save_video(dataset_test_agent_trajectory_dir[n],
+                             pos_test,
+                             n_videos,
+                             comm_graph=comm_graph_test,
+                             vel=vel_test,
+                             video_speed=video_speed)
 
         # \\\ EVAL
         # \\\\\\\\

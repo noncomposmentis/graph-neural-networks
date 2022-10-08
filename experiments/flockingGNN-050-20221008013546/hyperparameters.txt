@@ -1,0 +1,94 @@
+2022/10/08 01:35:46
+
+n_agents = 50
+n_agents_max = 50
+n_sim_points = 1
+comm_radius = 2.0
+repel_dist = 1.0
+n_train = 400
+n_valid = 20
+n_test = 20
+duration = 2.0
+sampling_time = 0.01
+init_geometry = circular
+init_vel_value = 3.0
+init_min_dist = 0.1
+accel_max = 10.0
+n_realizations = 10
+use_gpu = True
+
+optimization_algorithm = ADAM
+learning_rate = 0.0005
+beta_1 = 0.9
+beta_2 = 0.999
+loss_function = <class 'torch.nn.modules.loss.MSELoss'>
+trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+evaluator = <function evaluate_flocking at 0x00000117EA339310>
+prob_expert = 0.993
+n_epochs = 30
+batch_size = 20
+do_learning_rate_decay = False
+learning_rate_decay_rate = 0.9
+learning_rate_decay_period = 1
+validation_interval = 5
+
+name = LocalFlt
+archit = <class 'alegnn.modules.architectures_time.LocalGNN_DB'>
+device = cuda:0
+dim_node_signals = [6, 32]
+n_filter_taps = [4]
+bias = True
+nonlinearity = <class 'alegnn.utils.graph_ML.NoActivation'>
+dim_readout = [2]
+dim_edge_features = 1
+
+name = LocalGNN
+archit = <class 'alegnn.modules.architectures_time.LocalGNN_DB'>
+device = cuda:0
+dim_node_signals = [6, 64]
+n_filter_taps = [3]
+bias = True
+nonlinearity = <class 'torch.nn.modules.activation.Tanh'>
+dim_readout = [2]
+dim_edge_features = 1
+
+name = DAGNN1Ly
+archit = <class 'alegnn.modules.architectures_time.AggregationGNN_DB'>
+device = cuda:0
+dim_features = [6]
+n_filter_taps = []
+bias = True
+nonlinearity = <class 'torch.nn.modules.activation.Tanh'>
+pooling_function = <class 'alegnn.utils.graph_ML.NoPool'>
+pooling_size = []
+dim_readout = [64, 2]
+dim_edge_features = 1
+n_exchanges = 1
+
+name = GraphRNN
+archit = <class 'alegnn.modules.architectures_time.GraphRecurrentNN_DB'>
+device = cuda:0
+dim_input_signals = 6
+dim_output_signals = 64
+dim_hidden_signals = 64
+n_filter_taps = [3, 3]
+bias = True
+nonlinearity_hidden = <built-in method tanh of type object at 0x00007FFF85C1DF30>
+nonlinearity_output = <built-in method tanh of type object at 0x00007FFF85C1DF30>
+nonlinearityReadout = <class 'torch.nn.modules.activation.Tanh'>
+dim_readout = [2]
+dim_edge_features = 1
+
+do_print = True
+do_logging = False
+do_save_vars = True
+do_figs = True
+save_dir = experiments\flockingGNN-050-20221008013546
+print_interval = 1
+fig_size = 5
+line_width = 2
+marker_shape = o
+marker_size = 3
+video_speed = 0.5
+n_videos = 3
+
