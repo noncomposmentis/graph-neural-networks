@@ -184,7 +184,7 @@ evaluator = evaluation.evaluate_flocking
 
 # \\\ Overall training options
 prob_expert = 0.993  # Probability of choosing the expert in DAGger
-# DAGgerType = 'fixedBatch' # 'replaceTimeBatch', 'randomEpoch'
+# DAGger_type = 'fixedBatch' # 'replaceTimeBatch', 'randomEpoch'
 n_epochs = 30  # Number of epochs
 batch_size = 20  # Batch size
 do_learning_rate_decay = False  # Learning rate decay
@@ -664,7 +664,7 @@ for realization in range(n_realizations):
     for this_model in model_list:
 
         # Get the corresponding parameter dictionary
-        h_params_dict = deepcopy(eval('hParams' + this_model))
+        h_params_dict = deepcopy(eval('h_params_' + this_model))
         # and training options
         training_opts_per_model[this_model] = deepcopy(training_options)
 
@@ -676,12 +676,12 @@ for realization in range(n_realizations):
         call_archit = h_params_dict.pop('archit')
         this_device = h_params_dict.pop('device')
         # If there's a specific DAGger type, pop it out now
-        if 'DAGgerType' in h_params_dict.keys() \
+        if 'DAGger_type' in h_params_dict.keys() \
                 and 'prob_expert' in h_params_dict.keys():
             training_opts_per_model[this_model]['prob_expert'] = \
                 h_params_dict.pop('prob_expert')
-            training_opts_per_model[this_model]['DAGgerType'] = \
-                h_params_dict.pop('DAGgerType')
+            training_opts_per_model[this_model]['DAGger_type'] = \
+                h_params_dict.pop('DAGger_type')
 
         # If more than one graph or data realization is going to be carried out,
         # we are going to store all of thos models separately, so that any of
@@ -910,7 +910,7 @@ for realization in range(n_realizations):
 
             add_kw = {}
             add_kw['n_videos'] = n_videos
-            add_kw['graphNo'] = n_agents_test[n]
+            add_kw['graph_np'] = n_agents_test[n]
             if n_realizations > 1:
                 add_kw['realization_no'] = realization
 

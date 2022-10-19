@@ -35,15 +35,11 @@ def evaluate(model, data, **kwargs):
     # Get the device we're working on
     device = model.device
 
-    if 'do_save_vars' in kwargs.keys():
-        do_save_vars = kwargs['do_save_vars']
-    else:
-        do_save_vars = True
+    do_save_vars = kwargs.get("do_save_vars", True)
 
     ########
     # DATA #
     ########
-
     x_test, y_test = data.get_samples('test')
     x_test = x_test.to(device)
     y_test = y_test.to(device)
@@ -51,119 +47,26 @@ def evaluate(model, data, **kwargs):
     ##############
     # BEST MODEL #
     ##############
-
     model.load(label='Best')
 
     with torch.no_grad():
-        # Process the samples
-        y_hat_test = model.archit(x_test)
-        # y_hat_test is of shape
-        #   testSize x numberOfClasses
-        # We compute the error
-        cost_best = data.evaluate(y_hat_test, y_test)
+        y_hat_test = model.archit(x_test)  # Process the samples (y_hat_test is of shape [testSize x numberOfClasses])
+        cost_best = data.evaluate(y_hat_test, y_test)  # We compute the error
 
     ##############
     # LAST MODEL #
     ##############
-
     model.load(label='Last')
 
     with torch.no_grad():
-        # Process the samples
-        y_hat_test = model.archit(x_test)
-        # y_hat_test is of shape
-        #   testSize x numberOfClasses
-        # We compute the error
-        cost_last = data.evaluate(y_hat_test, y_test)
+        y_hat_test = model.archit(x_test)  # Process the samples (y_hat_test is of shape [testSize x numberOfClasses])
+        cost_last = data.evaluate(y_hat_test, y_test)  # We compute the error
 
-    eval_vars = {}
-    eval_vars['cost_best'] = cost_best.item()
-    eval_vars['cost_last'] = cost_last.item()
+    eval_vars = {"cost_best": cost_best.item(), "cost_last": cost_last.item()}
 
     if do_save_vars:
         save_dir_vars = os.path.join(model.save_dir, 'eval_vars')
-        if not os.path.exists(save_dir_vars):
-            os.makedirs(save_dir_vars)
-        path_to_file = os.path.join(save_dir_vars, model.name + 'eval_vars.pkl')
-        with open(path_to_file, 'wb') as eval_varsFile:
-            pickle.dump(eval_vars, eval_varsFile)
-
-    return eval_vars
-
-
-def evaluate_single_node(model, data, **kwargs):
-    """
-    evaluate_single_node: evaluate a model that has a single node forward
-
-    Input:
-        model (model class): class from Modules.model, needs to have a
-            'single_node_forward' method
-        data (data class): a data class from the Utils.dataTools; it needs to
-            have a get_samples method and an evaluate method and it also needs to
-            have a 'get_label_id' method
-        do_print (optional, bool): if True prints results
-
-    Output:
-        eval_vars (dict): 'errorBest' contains the error rate for the best
-            model, and 'errorLast' contains the error rate for the last model
-    """
-
-    assert 'single_node_forward' in dir(model.archit)
-    assert 'get_label_id' in dir(data)
-
-    # Get the device we're working on
-    device = model.device
-
-    if 'do_save_vars' in kwargs.keys():
-        do_save_vars = kwargs['do_save_vars']
-    else:
-        do_save_vars = True
-
-    ########
-    # DATA #
-    ########
-
-    x_test, y_test = data.get_samples('test')
-    x_test = x_test.to(device)
-    y_test = y_test.to(device)
-    target_ids = data.get_label_id('test')
-
-    ##############
-    # BEST MODEL #
-    ##############
-
-    model.load(label='Best')
-
-    with torch.no_grad():
-        # Process the samples
-        y_hat_test = model.archit.single_node_forward(x_test, target_ids)
-        # y_hat_test is of shape
-        #   testSize x numberOfClasses
-        # We compute the error
-        cost_best = data.evaluate(y_hat_test, y_test)
-
-    ##############
-    # LAST MODEL #
-    ##############
-
-    model.load(label='Last')
-
-    with torch.no_grad():
-        # Process the samples
-        y_hat_test = model.archit.single_node_forward(x_test, target_ids)
-        # y_hat_test is of shape
-        #   testSize x numberOfClasses
-        # We compute the error
-        cost_last = data.evaluate(y_hat_test, y_test)
-
-    eval_vars = {}
-    eval_vars['cost_best'] = cost_best.item()
-    eval_vars['cost_last'] = cost_last.item()
-
-    if do_save_vars:
-        save_dir_vars = os.path.join(model.save_dir, 'eval_vars')
-        if not os.path.exists(save_dir_vars):
-            os.makedirs(save_dir_vars)
+        if not os.path.exists(save_dir_vars): os.makedirs(save_dir_vars)
         path_to_file = os.path.join(save_dir_vars, model.name + 'eval_vars.pkl')
         with open(path_to_file, 'wb') as eval_varsFile:
             pickle.dump(eval_vars, eval_varsFile)
@@ -191,21 +94,9 @@ def evaluate_flocking(model, data, **kwargs):
             'cost_lastFull': cost of the last model over the full trajectory
             'cost_lastEnd': cost of the last model at the end of the trajectory
     """
-
-    if 'do_print' in kwargs.keys():
-        do_print = kwargs['do_print']
-    else:
-        do_print = True
-
-    if 'n_videos' in kwargs.keys():
-        n_videos = kwargs['n_videos']
-    else:
-        n_videos = 3
-
-    if 'graph_no' in kwargs.keys():
-        graph_no = kwargs['graph_no']
-    else:
-        graph_no = -1
+    do_print = kwargs.get("do_print", True)
+    n_videos = kwargs.get("n_videos", 3)
+    graph_no = kwargs.get("graph_no", -1)
 
     if 'realization_no' in kwargs.keys():
         if 'graph_no' in kwargs.keys():
@@ -234,20 +125,12 @@ def evaluate_flocking(model, data, **kwargs):
 
     model.load(label='Best')
 
-    if do_print:
-        print("\tComputing learned trajectory for best model...",
-              end=' ', flush=True)
+    if do_print: print("\tComputing learned trajectory for best model...", end=' ', flush=True)
 
-    pos_test_best, \
-    vel_test_best, \
-    accel_test_best, \
-    state_test_best, \
-    comm_graph_test_best = \
-        data.compute_trajectory(init_pos_test, init_vel_test, data.duration,
-                                archit=model.archit)
+    pos_test_best, vel_test_best, accel_test_best, state_test_best, comm_graph_test_best = \
+        data.compute_trajectory(init_pos_test, init_vel_test, data.duration, archit=model.archit)
 
-    if do_print:
-        print("OK")
+    if do_print: print("OK")
 
     ##############
     # LAST MODEL #
@@ -255,20 +138,12 @@ def evaluate_flocking(model, data, **kwargs):
 
     model.load(label='Last')
 
-    if do_print:
-        print("\tComputing learned trajectory for last model...",
-              end=' ', flush=True)
+    if do_print: print("\tComputing learned trajectory for last model...", end=' ', flush=True)
 
-    pos_test_last, \
-    vel_test_last, \
-    accel_test_last, \
-    state_test_last, \
-    comm_graph_test_last = \
-        data.compute_trajectory(init_pos_test, init_vel_test, data.duration,
-                                archit=model.archit)
+    pos_test_last, vel_test_last, accel_test_last, state_test_last, comm_graph_test_last = \
+        data.compute_trajectory(init_pos_test, init_vel_test, data.duration, archit=model.archit)
 
-    if do_print:
-        print("OK")
+    if do_print: print("OK")
 
     ###########
     # PREVIEW #
@@ -296,9 +171,7 @@ def evaluate_flocking(model, data, **kwargs):
     if not os.path.exists(learned_trajectories_dir):
         os.mkdir(learned_trajectories_dir)
 
-    if do_print:
-        print("\tPreview data...",
-              end=' ', flush=True)
+    if do_print: print("\tPreview data...", end=' ', flush=True)
 
     data.save_video(os.path.join(learned_trajectories_dir, 'Best'),
                     pos_test_best,
@@ -316,17 +189,17 @@ def evaluate_flocking(model, data, **kwargs):
                     videoSpeed=0.5,
                     do_print=False)
 
-    if do_print:
-        print("OK", flush=True)
+    if do_print: print("OK", flush=True)
 
     # \\\\\\\\\\\\\\\\\\
     # \\\ EVALUATION \\\
     # \\\\\\\\\\\\\\\\\\
 
-    eval_vars = {}
-    eval_vars['cost_bestFull'] = data.evaluate(vel=vel_test_best)
-    eval_vars['cost_bestEnd'] = data.evaluate(vel=vel_test_best[:, -1:, :, :])
-    eval_vars['cost_lastFull'] = data.evaluate(vel=vel_test_last)
-    eval_vars['cost_lastEnd'] = data.evaluate(vel=vel_test_last[:, -1:, :, :])
+    eval_vars = {
+        "cost_best_full": data.evaluate(vel=vel_test_best),
+        "cost_best_end": data.evaluate(vel=vel_test_best[:, -1:, :, :]),
+        "cost_last_full": data.evaluate(vel=vel_test_last),
+        "cost_last_end": data.evaluate(vel=vel_test_last[:, -1:, :, :])
+    }
 
     return eval_vars

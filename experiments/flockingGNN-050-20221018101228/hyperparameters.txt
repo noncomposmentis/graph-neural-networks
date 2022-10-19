@@ -1,0 +1,198 @@
+2022/10/18 10:12:28
+
+n_agents = 50
+n_agents_max = 50
+n_sim_points = 1
+comm_radius = 2.0
+repel_dist = 1.0
+n_train = 400
+n_valid = 20
+n_test = 20
+duration = 2.0
+sampling_time = 0.01
+init_geometry = circular
+init_vel_value = 3.0
+init_min_dist = 0.1
+accel_max = 10.0
+n_realizations = 10
+use_gpu = True
+
+optimization_algorithm = ADAM
+learning_rate = 0.0005
+beta_1 = 0.9
+beta_2 = 0.999
+loss_function = <class 'torch.nn.modules.loss.MSELoss'>
+trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+evaluator = <function evaluate_flocking at 0x000001825C11A3A0>
+prob_expert = 0.993
+n_epochs = 30
+batch_size = 20
+do_learning_rate_decay = False
+learning_rate_decay_rate = 0.9
+learning_rate_decay_period = 1
+validation_interval = 5
+
+name = DAGNN1Ly
+archit = <class 'alegnn.modules.architectures_time.AggregationGNN_DB'>
+device = cuda:0
+dim_features = [6]
+n_filter_taps = []
+bias = True
+nonlinearity = <class 'torch.nn.modules.activation.Tanh'>
+pooling_function = <class 'alegnn.utils.graph_ML.NoPool'>
+pooling_size = []
+dim_readout = [64, 2]
+dim_edge_features = 1
+n_exchanges = 1
+
+do_print = True
+do_logging = False
+do_save_vars = True
+do_figs = True
+save_dir = experiments\flockingGNN-050-20221018101228
+print_interval = 1
+fig_size = 5
+line_width = 2
+marker_shape = o
+marker_size = 3
+video_speed = 0.5
+n_videos = 3
+
+n_agents_test = [50]
+
+name = DAGNN1LyG00
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x000001825C11A3A0>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R00 = 54.32210050756341
+cost_opt_end0050R00 = 0.003938599919716489
+
+cost_best_fullDAGNN1LyG00050R00 = 101.20062979668212
+cost_best_endDAGNN1LyG000050R00 = 0.042105550339440106
+cost_last_fullDAGNN1LyG00050R00 = 871.391904257384
+cost_last_endDAGNN1LyG000050R00 = 5.7404626075786656
+
+name = DAGNN1LyG01
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x000001825C11A3A0>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R01 = 50.93309167369751
+cost_opt_end0050R01 = 0.0036631861425711508
+
+cost_best_fullDAGNN1LyG01050R01 = 82.98319303372226
+cost_best_endDAGNN1LyG010050R01 = 0.015711288910234412
+cost_last_fullDAGNN1LyG01050R01 = 610.9586159009729
+cost_last_endDAGNN1LyG010050R01 = 3.6000197759668864
+
+name = DAGNN1LyG02
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x000001825C11A3A0>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R02 = 50.70293703562231
+cost_opt_end0050R02 = 0.0034390897939054177
+
+cost_best_fullDAGNN1LyG02050R02 = 79.75304269049491
+cost_best_endDAGNN1LyG020050R02 = 0.014099450859368473
+cost_last_fullDAGNN1LyG02050R02 = 707.1266840878395
+cost_last_endDAGNN1LyG020050R02 = 4.359849255085002
+
+name = DAGNN1LyG03
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x000001825C11A3A0>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R03 = 50.78512038331486
+cost_opt_end0050R03 = 0.003585439277893862
+
+cost_best_fullDAGNN1LyG03050R03 = 92.94386235529214
+cost_best_endDAGNN1LyG030050R03 = 0.019709872912468927
+cost_last_fullDAGNN1LyG03050R03 = 1108.772963581477
+cost_last_endDAGNN1LyG030050R03 = 7.566102009693848
+
+name = DAGNN1LyG04
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x000001825C11A3A0>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R04 = 52.370666476608015
+cost_opt_end0050R04 = 0.003872490387348694
+
+cost_best_fullDAGNN1LyG04050R04 = 82.39881858463617
+cost_best_endDAGNN1LyG040050R04 = 0.009429625420337154
+cost_last_fullDAGNN1LyG04050R04 = 746.5402845063011
+cost_last_endDAGNN1LyG040050R04 = 4.0800872945982665
+
+name = DAGNN1LyG05
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x000001825C11A3A0>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R05 = 51.624333127728825
+cost_opt_end0050R05 = 0.0034401084747562967
+
+cost_best_fullDAGNN1LyG05050R05 = 79.26911284376652
+cost_best_endDAGNN1LyG050050R05 = 0.012217938907244087
+cost_last_fullDAGNN1LyG05050R05 = 794.2447692536368
+cost_last_endDAGNN1LyG050050R05 = 4.592094950059277
+
+name = DAGNN1LyG06
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x000001825C11A3A0>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R06 = 50.500906793387955
+cost_opt_end0050R06 = 0.0032943151327235903
+
+cost_best_fullDAGNN1LyG06050R06 = 82.19497864486718
+cost_best_endDAGNN1LyG060050R06 = 0.010926965227600671
+cost_last_fullDAGNN1LyG06050R06 = 767.193419151796
+cost_last_endDAGNN1LyG060050R06 = 4.417750955038419
+
+name = DAGNN1LyG07
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x000001825C11A3A0>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R07 = 49.60478399743114
+cost_opt_end0050R07 = 0.0034517271515301417
+
+cost_best_fullDAGNN1LyG07050R07 = 72.44790678711249
+cost_best_endDAGNN1LyG070050R07 = 0.006347556108467242
+cost_last_fullDAGNN1LyG07050R07 = 449.33014737432194
+cost_last_endDAGNN1LyG070050R07 = 2.3927955907592775
+
+name = DAGNN1LyG08
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x000001825C11A3A0>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+

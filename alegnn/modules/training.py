@@ -750,10 +750,10 @@ class TrainerFlocking(Trainer):
 
         # Get original dataset
         x_train_orig, y_train_orig = self.data.get_samples('train')
-        S_train_orig = self.data.getData('comm_graph', 'train')
-        init_vel_train_all = self.data.getData('init_vel', 'train')
+        S_train_orig = self.data.get_data('comm_graph', 'train')
+        init_vel_train_all = self.data.get_data('init_vel', 'train')
         if do_DAGer:
-            init_pos_train_all = self.data.getData('init_pos', 'train')
+            init_pos_train_all = self.data.get_data('init_pos', 'train')
 
         # And save it as the original "all samples"
         x_train_all = x_train_orig
@@ -970,8 +970,8 @@ class TrainerFlocking(Trainer):
                     # Create trajectories
 
                     # Initial data
-                    init_pos_valid = self.data.getData('init_pos', 'valid')
-                    init_vel_valid = self.data.getData('init_vel', 'valid')
+                    init_pos_valid = self.data.get_data('init_pos', 'valid')
+                    init_vel_valid = self.data.get_data('init_vel', 'valid')
 
                     # Compute trajectories
                     _, vel_test_valid, _, _, _ = self.data.compute_trajectory(

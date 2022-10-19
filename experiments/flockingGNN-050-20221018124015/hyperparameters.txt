@@ -1,0 +1,241 @@
+2022/10/18 12:40:15
+
+n_agents = 50
+n_agents_max = 50
+n_sim_points = 1
+comm_radius = 2.0
+repel_dist = 1.0
+n_train = 400
+n_valid = 20
+n_test = 20
+duration = 2.0
+sampling_time = 0.01
+init_geometry = circular
+init_vel_value = 3.0
+init_min_dist = 0.1
+accel_max = 10.0
+n_realizations = 10
+use_gpu = True
+
+optimization_algorithm = ADAM
+learning_rate = 0.0005
+beta_1 = 0.9
+beta_2 = 0.999
+loss_function = <class 'torch.nn.modules.loss.MSELoss'>
+trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+evaluator = <function evaluate_flocking at 0x00000213B6A69C10>
+prob_expert = 0.993
+n_epochs = 30
+batch_size = 20
+do_learning_rate_decay = False
+learning_rate_decay_rate = 0.9
+learning_rate_decay_period = 1
+validation_interval = 5
+
+name = DAGNN1Ly
+archit = <class 'alegnn.modules.architectures_time.AggregationGNN_DB'>
+device = cuda:0
+dim_features = [6]
+n_filter_taps = []
+bias = True
+nonlinearity = <class 'torch.nn.modules.activation.Tanh'>
+pooling_function = <class 'alegnn.utils.graph_ML.NoPool'>
+pooling_size = []
+dim_readout = [64, 2]
+dim_edge_features = 1
+n_exchanges = 1
+
+do_print = True
+do_logging = False
+do_save_vars = True
+do_figs = True
+save_dir = experiments\flockingGNN-050-20221018124015
+print_interval = 1
+fig_size = 5
+line_width = 2
+marker_shape = o
+marker_size = 3
+video_speed = 0.5
+n_videos = 3
+
+n_agents_test = [50]
+
+name = DAGNN1LyG00
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x00000213B6A69C10>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R00 = 51.53592362717656
+cost_opt_end0050R00 = 0.00340283951267659
+
+cost_best_fullDAGNN1LyG00050R00 = 81.20179543848658
+cost_best_endDAGNN1LyG000050R00 = 0.022209108832912293
+cost_last_fullDAGNN1LyG00050R00 = 294.42962823778805
+cost_last_endDAGNN1LyG000050R00 = 1.0781000796025226
+
+name = DAGNN1LyG01
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x00000213B6A69C10>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R01 = 50.0378425286072
+cost_opt_end0050R01 = 0.0034725187110012934
+
+cost_best_fullDAGNN1LyG01050R01 = 96.02202261693078
+cost_best_endDAGNN1LyG010050R01 = 0.04025539779860064
+cost_last_fullDAGNN1LyG01050R01 = 929.5857129332256
+cost_last_endDAGNN1LyG010050R01 = 5.572124197975652
+
+name = DAGNN1LyG02
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x00000213B6A69C10>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R02 = 54.65387025615922
+cost_opt_end0050R02 = 0.003715032561238397
+
+cost_best_fullDAGNN1LyG02050R02 = 141.62479881593876
+cost_best_endDAGNN1LyG020050R02 = 0.2372691369874595
+cost_last_fullDAGNN1LyG02050R02 = 537.3206537971415
+cost_last_endDAGNN1LyG020050R02 = 2.995903827362331
+
+name = DAGNN1LyG03
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x00000213B6A69C10>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R03 = 51.51210903226265
+cost_opt_end0050R03 = 0.0034179610840679104
+
+cost_best_fullDAGNN1LyG03050R03 = 77.26893151695785
+cost_best_endDAGNN1LyG030050R03 = 0.00839123616635403
+cost_last_fullDAGNN1LyG03050R03 = 759.7622835256782
+cost_last_endDAGNN1LyG030050R03 = 4.583842810666499
+
+name = DAGNN1LyG04
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x00000213B6A69C10>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R04 = 52.68325401523299
+cost_opt_end0050R04 = 0.0037403627057448854
+
+cost_best_fullDAGNN1LyG04050R04 = 86.33669233527846
+cost_best_endDAGNN1LyG040050R04 = 0.011543017541789673
+cost_last_fullDAGNN1LyG04050R04 = 323.4372489686733
+cost_last_endDAGNN1LyG040050R04 = 1.3946241204123924
+
+name = DAGNN1LyG05
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x00000213B6A69C10>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R05 = 51.64311232840041
+cost_opt_end0050R05 = 0.00398676107220402
+
+cost_best_fullDAGNN1LyG05050R05 = 80.62891959350705
+cost_best_endDAGNN1LyG050050R05 = 0.01104053570399639
+cost_last_fullDAGNN1LyG05050R05 = 727.8082573000249
+cost_last_endDAGNN1LyG050050R05 = 4.267969689877876
+
+name = DAGNN1LyG06
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x00000213B6A69C10>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R06 = 52.17308736676655
+cost_opt_end0050R06 = 0.003654216932240643
+
+cost_best_fullDAGNN1LyG06050R06 = 89.5538089564637
+cost_best_endDAGNN1LyG060050R06 = 0.014665559898553272
+cost_last_fullDAGNN1LyG06050R06 = 855.1150378882285
+cost_last_endDAGNN1LyG060050R06 = 5.518685977018935
+
+name = DAGNN1LyG07
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x00000213B6A69C10>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R07 = 53.03860219606364
+cost_opt_end0050R07 = 0.003488689354678433
+
+cost_best_fullDAGNN1LyG07050R07 = 88.36853956394711
+cost_best_endDAGNN1LyG070050R07 = 0.01793993770806339
+cost_last_fullDAGNN1LyG07050R07 = 404.1413949657875
+cost_last_endDAGNN1LyG070050R07 = 1.8523389771699752
+
+name = DAGNN1LyG08
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x00000213B6A69C10>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R08 = 53.9699201557454
+cost_opt_end0050R08 = 0.0035319516741370524
+
+cost_best_fullDAGNN1LyG08050R08 = 81.83426919556337
+cost_best_endDAGNN1LyG080050R08 = 0.008738192143540907
+cost_last_fullDAGNN1LyG08050R08 = 701.0631561784475
+cost_last_endDAGNN1LyG080050R08 = 3.757426689453402
+
+name = DAGNN1LyG09
+this_optimization_algorithm = ADAM
+this_trainer = <class 'alegnn.modules.training.TrainerFlocking'>
+this_evaluator = <function evaluate_flocking at 0x00000213B6A69C10>
+this_learning_rate = 0.0005
+this_beta_1 = 0.9
+this_beta_2 = 0.999
+
+cost_opt_full050R09 = 49.50742659547557
+cost_opt_end0050R09 = 0.0036731645507995236
+
+cost_best_fullDAGNN1LyG09050R09 = 78.94080196739735
+cost_best_endDAGNN1LyG090050R09 = 0.013791813272004284
+cost_last_fullDAGNN1LyG09050R09 = 330.5225748686532
+cost_last_endDAGNN1LyG090050R09 = 1.7428820966025493
+
+mean_cost_opt_full050 = 52.07551481018902
+std_dev_cost_opt_full050 = 1.519402353043185
+mean_cost_opt_end0050 = 0.0036083498158788743
+std_dev_cost_opt_end0050 = 0.00017187093337717855
+
+mean_acc_best_fullDAGNN1Ly050 = 90.1780580000471
+stddev_acc_best_fullDAGNN1Ly050 = 17.98232135244297
+mean_acc_best_endDAGNN1Ly0050 = 0.038584393605327436
+stddev_acc_best_endDAGNN1Ly0050 = 0.06682205346239858
+mean_acc_last_fullDAGNN1Ly050 = 586.3185948663648
+stddev_acc_last_fullDAGNN1Ly050 = 225.53910953290654
+mean_acc_last_endDAGNN1Ly0050 = 3.276389846614214
+stddev_acc_last_endDAGNN1Ly0050 = 1.6141284919285757
+
+
+[ 50 Agents] Final evaluations (10 data splits)	 Optimal:  52.0755 (+-1.5194) [Optm/Full]	            0.0036 (+-0.0002) [Optm/End ]	DAGNN1Ly:  90.1781 (+-17.9823) [Best/Full] 586.3186 (+-225.5391) [Last/Full]	            0.0386 (+-0.0668) [Best/End ]   3.2764 (+-1.6141) [Last/End ]
+Simulation started: 2022/10/18 12:40:15
+Simulation ended:   2022/10/18 15:34:30
+Total time: 2h 54m 14.87s
